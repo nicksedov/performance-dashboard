@@ -2,9 +2,10 @@ package jira
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"performance-dashboard/pkg/profiles"
 	"performance-dashboard/pkg/handler"
+	"performance-dashboard/pkg/profiles"
 )
 
 var client *http.Client
@@ -26,7 +27,7 @@ func Query[T any](apiMethod string, apiPath string, respHandler *handler.Respons
 	queryPath := fmt.Sprintf("%s%s", settings.JiraConfig.BaseURL, apiPath)
 	req, err := http.NewRequest(apiMethod, queryPath, nil)
 	if err != nil {
-		fmt.Printf("Error creating request: %v", err)
+		log.Printf("Error creating request: %v", err)
 		return nil
 	}
 
@@ -36,7 +37,7 @@ func Query[T any](apiMethod string, apiPath string, respHandler *handler.Respons
 	// Make request
 	resp, err := c.Do(req)
 	if err != nil {
-		fmt.Printf("Error making request: %v", err)
+		log.Printf("Error making request: %v", err)
 		return nil
 	}
 

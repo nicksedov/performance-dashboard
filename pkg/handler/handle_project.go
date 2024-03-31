@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"performance-dashboard/pkg/model"
 )
@@ -34,5 +34,5 @@ func (h ProjectHandler) Handle(resp *http.Response) *model.Project {
 }
 
 func (ProjectHandler) OnError(reason string, e error) {
-	fmt.Printf("%s:\n%v\n", reason, e)
+	log.Printf("%s:\n%v\n", reason, e)
 }

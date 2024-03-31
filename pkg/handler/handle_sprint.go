@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"performance-dashboard/pkg/model"
 
@@ -40,5 +40,5 @@ func (h SprintHandler) Handle(resp *http.Response) *model.Sprint {
 }
 
 func (SprintHandler) OnError(reason string, e error) {
-	fmt.Printf("%s:\n%v\n", reason, e)
+	log.Printf("%s:\n%v\n", reason, e)
 }
