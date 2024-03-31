@@ -6,12 +6,53 @@ import (
 	"net/url"
 	"performance-dashboard/pkg/handler"
 	"performance-dashboard/pkg/profiles"
-	"strings"
 )
 
 var client *http.Client
 
-func Query[T any](apiMethod string, apiPath string, respHandler *handler.ResponseHandler[T]) *T {
+func QueryOne[T any](apiMethod string, apiPath string, dto *T) *T {
+	resp := queryRaw(apiMethod, apiPath)
+	if resp != nil {
+		respHandler := handler.SimpleHandler[T]{}
+		respHandler.Handle(resp, dto)
+	}
+	return dto
+}
+
+func QueryPaged[T any](apiMethod string, apiPath string, dto *T) *T {
+	resp := queryRaw(apiMethod, apiPath)
+	if resp != nil {
+		respHandler := handler.PagedHandler[T]{}
+		respHandler.Handle(resp, dto)
+	}
+	return dto
+}
+
+
+func getClient() *http.Client {
+	if client == nil {
+		client = &http.Client{}
+	}
+	return client
+}
+
+func buildUrl(baseUrl, apiPath string) string {
+	u, err := url.Parse(apiPath)
+    if err != nil {
+        log.Fatal(err)
+    }
+	if u.Scheme != "" && u.Host != "" {
+		return u.String()
+	} else {
+		base, err := url.Parse(baseUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return base.ResolveReference(u).String()
+	}
+}
+
+func queryRaw(apiMethod string, apiPath string) *http.Response {
 
 	// Create HTTP client
 	c := getClient()
@@ -35,21 +76,5 @@ func Query[T any](apiMethod string, apiPath string, respHandler *handler.Respons
 		return nil
 	}
 
-	return (*respHandler).Handle(resp)
-}
-
-func getClient() *http.Client {
-	if client == nil {
-		client = &http.Client{}
-	}
-	return client
-}
-
-func buildUrl(baseUrl, apiPath string) string {
-	if (strings.HasPrefix(apiPath, "http:")  || strings.HasPrefix(apiPath, "https:")) {
-		return apiPath
-	} else {
-		result, _ := url.JoinPath(baseUrl, apiPath)
-		return result
-	}
+	return resp
 }

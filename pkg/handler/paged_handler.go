@@ -10,11 +10,10 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type SprintHandler struct {
-	result *model.Sprint
+type PagedHandler[T any] struct {
 }
 
-func (h SprintHandler) Handle(resp *http.Response) *model.Sprint {
+func (h PagedHandler[T]) Handle(resp *http.Response, dto *T) {
 
 	// Prepare request
 	defer resp.Body.Close()
@@ -23,22 +22,17 @@ func (h SprintHandler) Handle(resp *http.Response) *model.Sprint {
 	body, err := io.ReadAll(io.Reader(resp.Body))
 	if err != nil {
 		h.OnError("Error reading response body", err)
-		return nil
 	}
 
 	data := &model.Pagination{}
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		h.OnError("Error parsing JSON", err)
-		return nil
 	}
 
-	h.result = &model.Sprint{}
-	mapstructure.Decode(data.Values[0], h.result)
-
-	return h.result
+	mapstructure.Decode(data.Values[0], dto)
 }
 
-func (SprintHandler) OnError(reason string, e error) {
+func (PagedHandler[T]) OnError(reason string, e error) {
 	log.Printf("%s:\n%v\n", reason, e)
 }
