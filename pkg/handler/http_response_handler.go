@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-type Handler[T any] interface {
+type ResponseHandler[T any] interface {
 
 	Handle(r *http.Response, dto *T) 
 

@@ -10,6 +10,7 @@ type Issue struct {
 	issueUnexported
 }
 
+
 func (iss Issue) GetKey() string {
 	return iss.Key
 }
@@ -24,6 +25,14 @@ func (iss Issue) GetParam(key string) any {
 
 func (iss Issue) GetAllParams() *map[string]any {
 	return &iss.Fields
+}
+
+func (iss Issue) GetParamsFiltered() *map[string]any {
+	result := make(map[string] any)
+	for k, v := range iss.Fields {
+		result[k] = v
+	}
+	return &result
 }
 
 type Issues struct {
