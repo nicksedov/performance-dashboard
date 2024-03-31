@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/madflojo/tasks"
-	"golang.org/x/exp/maps"
 )
 
 var scheduler *tasks.Scheduler
@@ -23,8 +22,8 @@ func Schedule() {
 	
 	scheduler := initScheduler()
 
-	delay := time.Duration(1000 * time.Millisecond)
 	duration := time.Duration(5000 * time.Millisecond)
+	delay := time.Duration(1000 * time.Millisecond)
 	
 	projectTask := tasks.Task{
 		TaskFunc: updateProject,
@@ -42,8 +41,8 @@ func Schedule() {
 	scheduler.AddWithID("Project update task", &projectTask)
 	scheduler.AddWithID("Active sprint update task", &sprintTask)
 
-	log.Println("Scheduler activated. Scheduled tasks list:")
-	for i, taskId := range maps.Keys(scheduler.Tasks()) {
-		log.Printf("[%d] %s\n", i + 1, taskId)
+	log.Println("Scheduler activated. The wollowing tasks are scheduled to run:")
+	for id, task := range scheduler.Tasks() {
+		log.Printf("  - %s (runs every %v)\n", id, task.Interval)
 	}
 }
