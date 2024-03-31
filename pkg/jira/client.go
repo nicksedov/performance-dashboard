@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"performance-dashboard/pkg/profiles"
+	"performance-dashboard/pkg/handler"
 )
 
 var client *http.Client
@@ -15,7 +16,7 @@ func getClient() *http.Client {
 	return client
 }
 
-func Query[T any](apiMethod string, apiPath string, respHandler *ResponseHandler[T]) *T {
+func Query[T any](apiMethod string, apiPath string, respHandler *handler.ResponseHandler[T]) *T {
 
 	// Create HTTP client
 	c := getClient()

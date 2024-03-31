@@ -6,16 +6,13 @@ import (
 	"io"
 	"net/http"
 	"performance-dashboard/pkg/model"
-
-	"github.com/mitchellh/mapstructure"
 )
 
-type SprintHandler struct {
-	result *model.Sprint
+type ProjectHandler struct {
+	result *model.Project
 }
 
-func (h SprintHandler) Handle(resp *http.Response) *model.Sprint {
-
+func (h ProjectHandler) Handle(resp *http.Response) *model.Project {
 	// Prepare request
 	defer resp.Body.Close()
 
@@ -26,19 +23,16 @@ func (h SprintHandler) Handle(resp *http.Response) *model.Sprint {
 		return nil
 	}
 
-	data := &model.Pagination{}
-	err = json.Unmarshal(body, data)
+	h.result = &model.Project{}
+	err = json.Unmarshal(body, h.result)
 	if err != nil {
 		h.OnError("Error parsing JSON", err)
 		return nil
 	}
 
-	h.result = &model.Sprint{}
-	mapstructure.Decode(data.Values[0], h.result)
-
 	return h.result
 }
 
-func (SprintHandler) OnError(reason string, e error) {
+func (ProjectHandler) OnError(reason string, e error) {
 	fmt.Printf("%s:\n%v\n", reason, e)
 }

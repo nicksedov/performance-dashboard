@@ -16,7 +16,7 @@ jira:
   boardId: 1
   auth:
     clientId: jira-api-access@yourdomain.com
-    apiTtoken: ******************************
+    apiTtoken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # PostgreSQL database connection requisites
 database:
@@ -24,7 +24,7 @@ database:
   port: 5432
   db_name: performance-dashboard
   user: app-user
-  password: ******************************
+  password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   ssl_mode: disable
 
 # Logging configuration

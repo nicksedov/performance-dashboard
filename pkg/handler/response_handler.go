@@ -1,8 +1,11 @@
-package jira
+package handler
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type ResponseHandler[T any] interface {
+
 	Handle(r *http.Response) *T
 
 	OnError(reason string, e error)
