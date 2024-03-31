@@ -22,7 +22,7 @@ func Schedule() {
 	
 	scheduler := initScheduler()
 
-	duration := time.Duration(5000 * time.Millisecond)
+	duration := time.Duration(5 * time.Second)
 	delay := time.Duration(1000 * time.Millisecond)
 	
 	projectTask := tasks.Task{

@@ -1,21 +1,15 @@
 package jira
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"performance-dashboard/pkg/handler"
 	"performance-dashboard/pkg/profiles"
+	"strings"
 )
 
 var client *http.Client
-
-func getClient() *http.Client {
-	if client == nil {
-		client = &http.Client{}
-	}
-	return client
-}
 
 func Query[T any](apiMethod string, apiPath string, respHandler *handler.ResponseHandler[T]) *T {
 
@@ -24,7 +18,7 @@ func Query[T any](apiMethod string, apiPath string, respHandler *handler.Respons
 
 	// Prepare request
 	settings := profiles.GetSettings()
-	queryPath := fmt.Sprintf("%s%s", settings.JiraConfig.BaseURL, apiPath)
+	queryPath := buildUrl(settings.JiraConfig.BaseURL, apiPath)
 	req, err := http.NewRequest(apiMethod, queryPath, nil)
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
@@ -42,4 +36,20 @@ func Query[T any](apiMethod string, apiPath string, respHandler *handler.Respons
 	}
 
 	return (*respHandler).Handle(resp)
+}
+
+func getClient() *http.Client {
+	if client == nil {
+		client = &http.Client{}
+	}
+	return client
+}
+
+func buildUrl(baseUrl, apiPath string) string {
+	if (strings.HasPrefix(apiPath, "http:")  || strings.HasPrefix(apiPath, "https:")) {
+		return apiPath
+	} else {
+		result, _ := url.JoinPath(baseUrl, apiPath)
+		return result
+	}
 }
