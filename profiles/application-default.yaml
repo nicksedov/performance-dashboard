@@ -1,0 +1,36 @@
+# Application: Preformance dashboard 
+# This is a template of configuration file. In must not be modified.
+#
+# This file will be loaded at application start in case when application started without command line parameters
+# (or with parameters set to default values: performance-dashboard -config-path=./profiles -profile=default)
+#
+# Application server location
+server:
+  host: localhost
+  port: 45800
+
+# Jira connection requisites
+jira:
+  url: https://jira.atlassian.com
+  projectKey: TEMPLATE
+  boardId: 1
+  auth:
+    clientId: jira-api-access@yourdomain.com
+    apiTtoken: ******************************
+
+# PostgreSQL database connection requisites
+database:
+  host: localhost
+  port: 5432
+  db_name: performance-dashboard
+  user: app-user
+  password: ******************************
+  ssl_mode: disable
+
+# Logging configuration
+logger:
+  filename:   /var/log/performance-dashboard/performance-dashboard.log 
+  maxsize:    10
+  maxbackups: 10
+  maxage:     30
+  compress:   true
