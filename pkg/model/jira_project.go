@@ -5,46 +5,19 @@ type Project struct {
 	AvatarUrls AvatarUrls `json:"avatarUrls"`
 	Components []struct {
 		Ari      string `json:"ari"`
-		Assignee struct {
-			AccountID   string `json:"accountId"`
-			AccountType string `json:"accountType"`
-			Active      bool   `json:"active"`
-			AvatarUrls  AvatarUrls `json:"avatarUrls"`
-			DisplayName string `json:"displayName"`
-			Key         string `json:"key"`
-			Name        string `json:"name"`
-			Self        string `json:"self"`
-		} `json:"assignee"`
+		Assignee Account `json:"assignee"`
 		AssigneeType        string `json:"assigneeType"`
 		Description         string `json:"description"`
 		ID                  string `json:"id"`
 		IsAssigneeTypeValid bool   `json:"isAssigneeTypeValid"`
-		Lead struct {
-			AccountID   string `json:"accountId"`
-			AccountType string `json:"accountType"`
-			Active      bool   `json:"active"`
-			AvatarUrls  AvatarUrls `json:"avatarUrls"`
-			DisplayName string `json:"displayName"`
-			Key         string `json:"key"`
-			Name        string `json:"name"`
-			Self        string `json:"self"`
-		} `json:"lead"`
+		Lead Account `json:"lead"`
 		Metadata struct {
 			Icon string `json:"icon"`
 		} `json:"metadata"`
 		Name         string `json:"name"`
 		Project      string `json:"project"`
 		ProjectID    int    `json:"projectId"`
-		RealAssignee struct {
-			AccountID   string `json:"accountId"`
-			AccountType string `json:"accountType"`
-			Active      bool   `json:"active"`
-			AvatarUrls  AvatarUrls `json:"avatarUrls"`
-			DisplayName string `json:"displayName"`
-			Key         string `json:"key"`
-			Name        string `json:"name"`
-			Self        string `json:"self"`
-		} `json:"realAssignee"`
+		RealAssignee Account `json:"realAssignee"`
 		RealAssigneeType string `json:"realAssigneeType"`
 		Self             string `json:"self"`
 	} `json:"components"`
@@ -73,16 +46,7 @@ type Project struct {
 		} `json:"scope,omitempty"`
 	} `json:"issueTypes"`
 	Key  string `json:"key"`
-	Lead struct {
-		AccountID   string `json:"accountId"`
-		AccountType string `json:"accountType"`
-		Active      bool   `json:"active"`
-		AvatarUrls AvatarUrls `json:"avatarUrls"`
-		DisplayName string `json:"displayName"`
-		Key         string `json:"key"`
-		Name        string `json:"name"`
-		Self        string `json:"self"`
-	} `json:"lead"`
+	Lead Account `json:"lead"`
 	Name            string `json:"name"`
 	ProjectCategory struct {
 		Description string `json:"description"`

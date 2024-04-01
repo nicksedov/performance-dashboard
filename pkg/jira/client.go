@@ -28,7 +28,6 @@ func QueryPaged[T any](apiMethod string, apiPath string, dto *T) *T {
 	return dto
 }
 
-
 func getClient() *http.Client {
 	if client == nil {
 		client = &http.Client{}
