@@ -19,22 +19,22 @@ func initScheduler() *tasks.Scheduler {
 }
 
 func Schedule() {
-	
+
 	scheduler := initScheduler()
 
 	duration := time.Duration(5 * time.Second)
 	delay := time.Duration(1000 * time.Millisecond)
-	
+
 	projectTask := tasks.Task{
-		TaskFunc: updateProject,
-		Interval: duration,
+		TaskFunc:          jiraCoreWorker,
+		Interval:          duration,
 		RunSingleInstance: true,
 	}
 
 	sprintTask := tasks.Task{
-		TaskFunc: updateSprint,
-		StartAfter: time.Now().Add(delay),
-		Interval: duration,
+		TaskFunc:          jiraAgileWorker,
+		StartAfter:        time.Now().Add(delay),
+		Interval:          duration,
 		RunSingleInstance: true,
 	}
 
