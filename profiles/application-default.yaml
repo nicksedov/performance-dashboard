@@ -17,7 +17,7 @@ jira:
   auth:
     type: basic
     clientId: jira-api-access@yourdomain.com
-    apiTtoken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    apiToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # PostgreSQL database connection requisites
 database:
