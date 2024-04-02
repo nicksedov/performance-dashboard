@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -19,10 +20,12 @@ func (h SimpleHandler[T]) Handle(resp *http.Response, dto *T) {
 	if err != nil {
 		h.OnError("Error reading response body", err)
 	}
-
+	
 	err = json.Unmarshal(body, dto)
 	if err != nil {
-		h.OnError("Error parsing JSON", err)
+		errorMsg := fmt.Sprintf("Expected valid JSON in HTTP response\n  HTTP request: %s %s\n HTTP responded: %s", 
+			resp.Request.Method, resp.Request.RequestURI, string(body))
+		h.OnError(errorMsg, err)
 	}
 }
 

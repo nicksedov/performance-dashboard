@@ -28,6 +28,7 @@ func Schedule() {
 	projectTask := tasks.Task{
 		TaskFunc:          jiraCoreWorker,
 		Interval:          duration,
+		StartAfter:        time.Now().Add(time.Hour),
 		RunSingleInstance: true,
 	}
 
