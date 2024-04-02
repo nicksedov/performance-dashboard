@@ -66,7 +66,14 @@ func queryRaw(apiMethod string, apiPath string) *http.Response {
 	}
 
 	// Set authentication headers
-	req.SetBasicAuth(settings.JiraConfig.Auth.ClientId, settings.JiraConfig.Auth.ApiToken)
+	authSettings := settings.JiraConfig.Auth
+	if authSettings.Type == "basic" {
+		req.SetBasicAuth(settings.JiraConfig.Auth.ClientId, settings.JiraConfig.Auth.ApiToken)
+	} else if authSettings.Type == "apitoken" {
+		req.Header.Set("Authorization", "Bearer " + settings.JiraConfig.Auth.ApiToken)
+	} else {
+		log.Printf("Warning: invalid authorization type %s", authSettings.Type)
+	}
 
 	// Make request
 	resp, err := c.Do(req)

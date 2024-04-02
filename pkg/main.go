@@ -13,17 +13,18 @@ import (
 )
 
 func main() {
-	
+
 	flag.Parse()
 
 	util.InitLog()
-	
+
 	scheduler.Schedule()
 
-	// Start http server	
-	config := profiles.GetSettings()
-	serverAddress := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
-	http.HandleFunc("/health", controller.GetGealth)
+	http.HandleFunc("/health", controller.GetGealthCheck)
+
+	// Start http server
+	serverConfig := profiles.GetSettings().Server
+	serverAddress := fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port)
 	srvErr := http.ListenAndServe(serverAddress, nil)
 	if srvErr != nil {
 		log.Fatalf("Error initializing HTTP server:\n  %s", srvErr.Error())

@@ -14,6 +14,7 @@ type Settings struct {
 		ProjectKey  string `yaml:"projectKey"`
 		BoardID     string `yaml:"boardId"`
 		Auth struct {
+			Type     string `yaml:"type"`
 			ClientId string `yaml:"clientId"`
 			ApiToken string `yaml:"apiTtoken"`
 		} `yaml:"auth"`

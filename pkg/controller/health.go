@@ -1,10 +1,15 @@
 package controller
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 )
 
-func GetGealth(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "{\"Status\":\"OK\"}\n")
+type healthCheck struct {
+	Status string
+}
+
+func GetGealthCheck(w http.ResponseWriter, r *http.Request) {
+	st, _ := json.Marshal(&healthCheck{Status: "OK"})
+	w.Write(st)
 }

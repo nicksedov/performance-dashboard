@@ -15,6 +15,7 @@ jira:
   projectKey: TEMPLATE
   boardId: 1
   auth:
+    type: basic
     clientId: jira-api-access@yourdomain.com
     apiTtoken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
