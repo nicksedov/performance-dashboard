@@ -9,7 +9,7 @@ package profiles
 import (
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-yaml/yaml"
@@ -29,7 +29,7 @@ func GetSettings() *Settings {
 func readSettingsFile() {
 	settings = &Settings{}
 
-	profilePath := path.Join(*cli.FlagConfigPath, "application-" + *cli.FlagProfile + ".yaml")
+	profilePath := filepath.Join(*cli.FlagConfigPath, "application-" + *cli.FlagProfile + ".yaml")
 	log.Printf("Discovering profile by path: %s", profilePath)
 	if strings.TrimSpace(*cli.FlagProfile) != "" {
 		ymlFile, ioErr := os.ReadFile(profilePath)
