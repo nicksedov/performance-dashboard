@@ -6,6 +6,7 @@ import (
 	"performance-dashboard/pkg/jira"
 	"performance-dashboard/pkg/model"
 	"performance-dashboard/pkg/profiles"
+	"time"
 )
 
 func jiraCoreWorker() error {
@@ -20,6 +21,7 @@ func jiraCoreWorker() error {
 	roles := project.Roles
 
 	for _, getRoleApi := range roles {
+		time.Sleep(500 * time.Millisecond)
 		role := jira.QueryOne("GET", getRoleApi, &model.Role{})
 		log.Printf("Role lookup URL: %s\nProject %s has role %s with %d actors:\n", getRoleApi, projectKey, role.Name, len(role.Actors))
 		for _, actor := range role.Actors {

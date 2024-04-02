@@ -22,8 +22,8 @@ func Schedule() {
 
 	scheduler := initScheduler()
 
-	duration := time.Duration(5 * time.Second)
-	delay := time.Duration(2000 * time.Millisecond)
+	duration := time.Duration(15 * time.Minute)
+	timeGap := time.Duration(10 * time.Second)
 
 	projectTask := tasks.Task{
 		TaskFunc:          jiraCoreWorker,
@@ -33,11 +33,12 @@ func Schedule() {
 
 	sprintTask := tasks.Task{
 		TaskFunc:          jiraAgileWorker,
-		StartAfter:        time.Now().Add(delay),
+		StartAfter:        time.Now().Add(timeGap),
 		Interval:          duration,
 		RunSingleInstance: true,
 	}
 
+	// Schedule future execution
 	scheduler.AddWithID("Project update task", &projectTask)
 	scheduler.AddWithID("Active sprint update task", &sprintTask)
 
@@ -45,4 +46,9 @@ func Schedule() {
 	for id, task := range scheduler.Tasks() {
 		log.Printf("  - %s (runs every %v)\n", id, task.Interval)
 	}
+
+	// Initial workers execution
+	go jiraCoreWorker()
+	time.Sleep(timeGap)
+	go jiraAgileWorker()
 }
