@@ -7,9 +7,9 @@ package profiles
  *  - Telegram connection settings
  */
 import (
-	"fmt"
 	"log"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/go-yaml/yaml"
@@ -28,7 +28,9 @@ func GetSettings() *Settings {
 
 func readSettingsFile() {
 	settings = &Settings{}
-	profilePath := fmt.Sprintf("%s/application-%s.yaml", *cli.FlagConfigPath, *cli.FlagProfile)
+
+	profilePath := path.Join(*cli.FlagConfigPath, "application-" + *cli.FlagProfile + ".yaml")
+	log.Printf("Discovering profile by path: %s", profilePath)
 	if strings.TrimSpace(*cli.FlagProfile) != "" {
 		ymlFile, ioErr := os.ReadFile(profilePath)
 		if ioErr == nil {
@@ -36,6 +38,8 @@ func readSettingsFile() {
 			if ymlErr != nil {
 				log.Fatal(ymlErr)
 			}
+		} else {
+			log.Panic("Error reding profile")
 		}
 	} else {
 		log.Fatalf("Wrong profile name: %s", profilePath)

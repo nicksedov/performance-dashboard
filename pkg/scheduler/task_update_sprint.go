@@ -1,8 +1,9 @@
 package scheduler
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
+	"log"
 	"performance-dashboard/pkg/jira"
 	"performance-dashboard/pkg/model"
 	"performance-dashboard/pkg/profiles"
@@ -20,9 +21,13 @@ func updateSprint() error {
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, sprint.ID)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &model.Issues{})
 
-	fmt.Printf("Active sprintIssues in Active Sprint [%d]:", sprint.ID)
-	issuesJson, _ := json.MarshalIndent(issues, "", "  ")
-	fmt.Printf("%s\n", string(issuesJson))
+	log.Printf("Number of issues in active Sprint [%d]: %d\n", sprint.ID, len(issues.Issues))
+	for _, issue := range issues.Issues {
+		log.Printf("  - [%s] %s %s", issue.Key, issue.Fields.Issuetype.Name, issue.Fields.Summary)
+	}
+
+	//issuesJson, _ := json.MarshalIndent(issues, "", "  ")
+	//fmt.Printf("%s\n", string(issuesJson))
 
 	return nil
 } 

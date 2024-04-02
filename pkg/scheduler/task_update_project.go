@@ -1,10 +1,12 @@
 package scheduler
 
 import (
+	"encoding/json"
 	"fmt"
 	"performance-dashboard/pkg/jira"
 	"performance-dashboard/pkg/model"
 	"performance-dashboard/pkg/profiles"
+	"performance-dashboard/pkg/util"
 )
 
 func updateProject() error {
@@ -15,7 +17,9 @@ func updateProject() error {
 	// Get project info
 	getProjectApiPath := fmt.Sprintf("/rest/api/2/project/%s", projectKey)
 	project := jira.QueryOne("GET", getProjectApiPath, &model.Project{})
-	fmt.Printf("Active project key: %s\n", project.Key)
+	projectJson, _ := json.Marshal(project)
+	fmt.Printf("Active project key: %s\nProject Details:\n", project.Key)
+	util.PrettyPrintJSON(projectJson)
 
 	roles := project.Roles
 
