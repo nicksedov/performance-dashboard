@@ -60,5 +60,12 @@ type Project struct {
 	Simplified bool   `json:"simplified"`
 	Style      string `json:"style"`
 	URL        string `json:"url"`
-	Versions   []string  `json:"versions"`
+	Versions   []struct {
+		Self      string `json:"self"`
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		Archived  bool   `json:"archived"`
+		Released  bool   `json:"released"`
+		ProjectID int    `json:"projectId"`
+	} `json:"versions"`
 }
