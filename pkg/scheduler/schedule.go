@@ -23,12 +23,11 @@ func Schedule() {
 	scheduler := initScheduler()
 
 	duration := time.Duration(5 * time.Second)
-	delay := time.Duration(1000 * time.Millisecond)
+	delay := time.Duration(2000 * time.Millisecond)
 
 	projectTask := tasks.Task{
 		TaskFunc:          jiraCoreWorker,
 		Interval:          duration,
-		StartAfter:        time.Now().Add(time.Hour),
 		RunSingleInstance: true,
 	}
 
