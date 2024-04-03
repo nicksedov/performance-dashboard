@@ -35,3 +35,5 @@ logger:
   maxbackups: 10
   maxage:     30
   compress:   true
+  console:
+    mode: off   # stdout, stderr or off

@@ -28,5 +28,10 @@ type Settings struct {
 		SSLMode  string `yaml:"ssl_mode"`
 	} `yaml:"database"`
 
-	Logger lumberjack.Logger `yaml:"logger"`
+	Logger struct {
+		lumberjack.Logger
+		Console  struct {
+			Mode string `yaml:"mode"`
+		}
+	} `yaml:"logger"`
 }
