@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"performance-dashboard/pkg/handler"
+	"performance-dashboard/pkg/jira/handler"
 	"performance-dashboard/pkg/profiles"
 )
 

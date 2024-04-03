@@ -5,9 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"performance-dashboard/pkg/model"
-
-	"github.com/mitchellh/mapstructure"
+	"performance-dashboard/pkg/jira/model"
 )
 
 type PagedHandler[T any] struct {
@@ -24,13 +22,16 @@ func (h PagedHandler[T]) Handle(resp *http.Response, dto *T) {
 		h.OnError("Error reading response body", err)
 	}
 
-	data := &model.Pagination{}
+	data := &jira.Pagination{}
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		h.OnError("Error parsing JSON", err)
 	}
-
-	mapstructure.Decode(data.Values[0], dto)
+	if len(data.Values) > 0 {
+		value := data.Values[0]
+		jsonListItem, _ := json.Marshal(value)
+		json.Unmarshal(jsonListItem, dto)
+	}
 }
 
 func (PagedHandler[T]) OnError(reason string, e error) {

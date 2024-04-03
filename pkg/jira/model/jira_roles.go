@@ -1,4 +1,4 @@
-package model
+package jira
 
 type Role struct {
 	Actors []struct {

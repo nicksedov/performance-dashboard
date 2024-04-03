@@ -1,4 +1,4 @@
-package model
+package jira
 
 type Pagination struct {
 	MaxResults int              `json:"maxResults"`

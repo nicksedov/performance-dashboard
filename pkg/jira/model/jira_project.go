@@ -1,4 +1,4 @@
-package model
+package jira
 
 type Project struct {
 	AssigneeType string   `json:"assigneeType"`

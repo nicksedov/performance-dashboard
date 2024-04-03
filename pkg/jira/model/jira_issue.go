@@ -1,6 +1,4 @@
-package model
-
-import "time"
+package jira
 
 type IssueType  struct {
 	AvatarID       int    `json:"avatarId"`
@@ -102,17 +100,7 @@ type Issue struct {
 		Resolution     interface{} `json:"resolution"`
 		Resolutiondate interface{} `json:"resolutiondate"`
 		Security       interface{} `json:"security"`
-		Sprint         struct {
-			CreatedDate   time.Time `json:"createdDate"`
-			EndDate       time.Time `json:"endDate"`
-			Goal          string    `json:"goal"`
-			ID            int       `json:"id"`
-			Name          string    `json:"name"`
-			OriginBoardID int       `json:"originBoardId"`
-			Self          string    `json:"self"`
-			StartDate     time.Time `json:"startDate"`
-			State         string    `json:"state"`
-		} `json:"sprint"`
+		Sprint         Sprint `json:"sprint"`
 		Status Status `json:"status"`
 		Statuscategorychangedate string        `json:"statuscategorychangedate"`
 		Subtasks                 []interface{} `json:"subtasks"`

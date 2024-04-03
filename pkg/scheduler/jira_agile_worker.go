@@ -1,11 +1,11 @@
 package scheduler
 
 import (
-	//"encoding/json"
 	"fmt"
 	"log"
-	"performance-dashboard/pkg/jira"
-	"performance-dashboard/pkg/model"
+	"performance-dashboard/pkg/database"
+	"performance-dashboard/pkg/jira/http"
+	model "performance-dashboard/pkg/jira/model"
 	"performance-dashboard/pkg/profiles"
 )
 
@@ -19,6 +19,8 @@ func jiraAgileWorker() error {
 	sprint := jira.QueryPaged("GET", getSprintApiPath, &model.Sprint{})
 
 	log.Printf("Active Sprint: %d\n", sprint.ID)
+
+	database.SaveSprint(sprint)
 
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, sprint.ID)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &model.Issues{})

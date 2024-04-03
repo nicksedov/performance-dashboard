@@ -3,8 +3,8 @@ package scheduler
 import (
 	"fmt"
 	"log"
-	"performance-dashboard/pkg/jira"
-	"performance-dashboard/pkg/model"
+	"performance-dashboard/pkg/jira/http"
+	model "performance-dashboard/pkg/jira/model"
 	"performance-dashboard/pkg/profiles"
 	"time"
 )
