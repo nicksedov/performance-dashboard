@@ -13,16 +13,15 @@ import (
 )
 
 func main() {
-
+	// Process command line options
 	flag.Parse()
-
+	// Initialize logging
 	util.InitLog()
-
+	// Initialize background periodic tasks
 	scheduler.Schedule()
-
+	// Configure endpoints
 	http.HandleFunc("/health", controller.GetGealthCheck)
-
-	// Start http server
+	// Start HTTP server
 	serverConfig := profiles.GetSettings().Server
 	serverAddress := fmt.Sprintf("%s:%d", serverConfig.Host, serverConfig.Port)
 	srvErr := http.ListenAndServe(serverAddress, nil)

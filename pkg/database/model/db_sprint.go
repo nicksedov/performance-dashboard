@@ -19,8 +19,4 @@ type ActiveSprint struct {
 	SprintID      int 
 }
 
-type Issue struct {
-	ID            int        `gorm:"unique;primaryKey"`
-	Key           string
-}
  

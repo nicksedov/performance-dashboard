@@ -1,5 +1,6 @@
 .vscode
 .idea
+.local
 
 performance-dashboard
 performance-dashboard.exe
@@ -7,4 +8,3 @@ performance-dashboard.exe
 profiles/application-*.yaml
 !profiles/application-default.yaml
 
-*.draft

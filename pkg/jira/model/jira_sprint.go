@@ -14,3 +14,4 @@ type Sprint struct {
 	State         string    `json:"state"`
 	Goal          string    `json:"goal"`
 }
+

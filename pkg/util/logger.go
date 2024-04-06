@@ -13,15 +13,15 @@ import (
 func InitLog() {
 	settings := profiles.GetSettings()
 	consoleMode := settings.Logger.Console.Mode
+	fileLogger := &settings.Logger.File
 	var logWriter io.Writer
-	if strings.TrimSpace(settings.Logger.Filename) != "" {
-		lumberjackLogger := &settings.Logger
+	if strings.TrimSpace(fileLogger.Filename) != "" {
 		if consoleMode == "stderr" {
-			logWriter = io.MultiWriter(os.Stderr, lumberjackLogger)
+			logWriter = io.MultiWriter(os.Stderr, fileLogger)
 		} else if consoleMode == "stdout" {
-			logWriter = io.MultiWriter(os.Stdout, lumberjackLogger)
+			logWriter = io.MultiWriter(os.Stdout, fileLogger)
 		} else {
-			logWriter = io.Writer(lumberjackLogger)
+			logWriter = io.Writer(fileLogger)
 		}
 	} else {
 		if consoleMode == "stderr" {

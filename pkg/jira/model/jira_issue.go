@@ -1,5 +1,7 @@
 package jira
 
+import "time"
+
 type IssueType  struct {
 	AvatarID       int    `json:"avatarId"`
 	Description    string `json:"description"`
@@ -34,8 +36,33 @@ type Status struct {
 	} `json:"statusCategory"`
 }
 
+type Attachment struct {
+	Author Account  `json:"author"`
+	Content  string `json:"content"`
+	Created  string `json:"created"`
+	Filename string `json:"filename"`
+	ID       string `json:"id"`
+	MimeType string `json:"mimeType"`
+	Self     string `json:"self"`
+	Size     int    `json:"size"`
+}
+
+type Comment struct {
+	Author       Account `json:"author"`
+	Body         string `json:"body"`
+	Created      time.Time `json:"created"`
+	ID           string `json:"id"`
+	JsdPublic    bool   `json:"jsdPublic"`
+	Self         string `json:"self"`
+	UpdateAuthor Account `json:"updateAuthor"`
+	Updated      time.Time `json:"updated"`
+}
+
 type Issue struct {
-	Key    string `json:"key"`
+	ID   string `json:"id"`
+	Key  string `json:"key"`
+	Self string `json:"self"`
+	Expand string `json:"expand"`
 	Fields struct {
 		Aggregateprogress struct {
 			Progress int `json:"progress"`
@@ -45,9 +72,10 @@ type Issue struct {
 		Aggregatetimeoriginalestimate interface{} `json:"aggregatetimeoriginalestimate"`
 		Aggregatetimespent            interface{} `json:"aggregatetimespent"`
 		Assignee Account `json:"assignee"`
-		Attachment []interface{} `json:"attachment"`
-		Comment    struct {
-			Comments   []interface{} `json:"comments"`
+		Attachment    []Attachment `json:"attachment"`
+		ClosedSprints []Sprint `json:"closedSprints"`
+		IssueComment struct {
+			Comments   []Comment     `json:"comments"`
 			MaxResults int           `json:"maxResults"`
 			Self       string        `json:"self"`
 			StartAt    int           `json:"startAt"`
@@ -56,7 +84,7 @@ type Issue struct {
 		Components []interface{} `json:"components"`
 		Created    string        `json:"created"`
 		Creator    Account `json:"creator"`
-		Description      interface{}   `json:"description"`
+		Description      string   `json:"description"`
 		Duedate          interface{}   `json:"duedate"`
 		Environment      interface{}   `json:"environment"`
 		Epic             interface{}   `json:"epic"`
@@ -69,12 +97,27 @@ type Issue struct {
 			ShouldDisplay bool `json:"shouldDisplay"`
 		} `json:"issuerestriction"`
 		Issuetype IssueType `json:"issuetype"`
-		Labels     []interface{} `json:"labels"`
+		Labels     []string `json:"labels"`
 		LastViewed string        `json:"lastViewed"`
 		Parent     struct {
 			Fields struct {
-				Issuetype IssueType `json:"issuetype"`
-				Priority  Priority `json:"priority"`
+				Issuetype struct {
+					AvatarID       int    `json:"avatarId"`
+					Description    string `json:"description"`
+					EntityID       string `json:"entityId"`
+					HierarchyLevel int    `json:"hierarchyLevel"`
+					IconURL        string `json:"iconUrl"`
+					ID             string `json:"id"`
+					Name           string `json:"name"`
+					Self           string `json:"self"`
+					Subtask        bool   `json:"subtask"`
+				} `json:"issuetype"`
+				Priority struct {
+					IconURL string `json:"iconUrl"`
+					ID      string `json:"id"`
+					Name    string `json:"name"`
+					Self    string `json:"self"`
+				} `json:"priority"`
 				Status Status `json:"status"`
 				Summary string `json:"summary"`
 			} `json:"fields"`
@@ -88,7 +131,12 @@ type Issue struct {
 			Total    int `json:"total"`
 		} `json:"progress"`
 		Project struct {
-			AvatarUrls AvatarUrls `json:"avatarUrls"`
+			AvatarUrls struct {
+				One6X16   string `json:"16x16"`
+				Two4X24   string `json:"24x24"`
+				Three2X32 string `json:"32x32"`
+				Four8X48  string `json:"48x48"`
+			} `json:"avatarUrls"`
 			ID             string `json:"id"`
 			Key            string `json:"key"`
 			Name           string `json:"name"`
@@ -101,9 +149,9 @@ type Issue struct {
 		Resolutiondate interface{} `json:"resolutiondate"`
 		Security       interface{} `json:"security"`
 		Sprint         Sprint `json:"sprint"`
-		Status Status `json:"status"`
+		Status         Status `json:"status"`
 		Statuscategorychangedate string        `json:"statuscategorychangedate"`
-		Subtasks                 []interface{} `json:"subtasks"`
+		Subtasks                 []Issue       `json:"subtasks"`
 		Summary                  string        `json:"summary"`
 		Timeestimate             interface{}   `json:"timeestimate"`
 		Timeoriginalestimate     interface{}   `json:"timeoriginalestimate"`
@@ -133,5 +181,9 @@ type Issue struct {
 }
 
 type Issues struct {
-	Issues []Issue `json:"issues"`
+	Expand      string `json:"expand"`
+	Issues     []Issue `json:"issues"`
+	MaxResults     int `json:"maxResults"`
+	StartAt        int `json:"startAt"`
+	Total          int `json:"total"`
 }

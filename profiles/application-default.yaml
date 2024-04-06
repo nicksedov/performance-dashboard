@@ -30,10 +30,11 @@ database:
 
 # Logging configuration
 logger:
-  filename:   /var/log/performance-dashboard/performance-dashboard.log 
-  maxsize:    10
-  maxbackups: 10
-  maxage:     30
-  compress:   true
+  file:
+    filename:   /var/log/performance-dashboard/performance-dashboard.log
+    maxsize:    10
+    maxbackups: 10
+    maxage:     30
+    compress:   true
   console:
     mode: off   # stdout, stderr or off

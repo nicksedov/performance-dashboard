@@ -29,7 +29,7 @@ type Settings struct {
 	} `yaml:"database"`
 
 	Logger struct {
-		lumberjack.Logger
+		File lumberjack.Logger `yaml:"file"`
 		Console  struct {
 			Mode string `yaml:"mode"`
 		}
