@@ -58,6 +58,25 @@ type Comment struct {
 	Updated      time.Time `json:"updated"`
 }
 
+type Votes struct {
+	HasVoted bool   `json:"hasVoted"`
+	Self     string `json:"self"`
+	Votes    int    `json:"votes"`
+} 
+
+type Watches struct {
+	IsWatching bool   `json:"isWatching"`
+	Self       string `json:"self"`
+	WatchCount int    `json:"watchCount"`
+}
+
+type Worklog struct {
+	MaxResults int           `json:"maxResults"`
+	StartAt    int           `json:"startAt"`
+	Total      int           `json:"total"`
+	Worklogs   []interface{} `json:"worklogs"`
+}
+
 type Issue struct {
 	ID   string `json:"id"`
 	Key  string `json:"key"`
@@ -101,23 +120,8 @@ type Issue struct {
 		LastViewed string        `json:"lastViewed"`
 		Parent     struct {
 			Fields struct {
-				Issuetype struct {
-					AvatarID       int    `json:"avatarId"`
-					Description    string `json:"description"`
-					EntityID       string `json:"entityId"`
-					HierarchyLevel int    `json:"hierarchyLevel"`
-					IconURL        string `json:"iconUrl"`
-					ID             string `json:"id"`
-					Name           string `json:"name"`
-					Self           string `json:"self"`
-					Subtask        bool   `json:"subtask"`
-				} `json:"issuetype"`
-				Priority struct {
-					IconURL string `json:"iconUrl"`
-					ID      string `json:"id"`
-					Name    string `json:"name"`
-					Self    string `json:"self"`
-				} `json:"priority"`
+				Issuetype IssueType `json:"issuetype"`
+				Priority Priority `json:"priority"`
 				Status Status `json:"status"`
 				Summary string `json:"summary"`
 			} `json:"fields"`
@@ -131,12 +135,7 @@ type Issue struct {
 			Total    int `json:"total"`
 		} `json:"progress"`
 		Project struct {
-			AvatarUrls struct {
-				One6X16   string `json:"16x16"`
-				Two4X24   string `json:"24x24"`
-				Three2X32 string `json:"32x32"`
-				Four8X48  string `json:"48x48"`
-			} `json:"avatarUrls"`
+			AvatarUrls AvatarUrls `json:"avatarUrls"`
 			ID             string `json:"id"`
 			Key            string `json:"key"`
 			Name           string `json:"name"`
@@ -160,22 +159,9 @@ type Issue struct {
 		} `json:"timetracking"`
 		Updated  string        `json:"updated"`
 		Versions []interface{} `json:"versions"`
-		Votes    struct {
-			HasVoted bool   `json:"hasVoted"`
-			Self     string `json:"self"`
-			Votes    int    `json:"votes"`
-		} `json:"votes"`
-		Watches struct {
-			IsWatching bool   `json:"isWatching"`
-			Self       string `json:"self"`
-			WatchCount int    `json:"watchCount"`
-		} `json:"watches"`
-		Worklog struct {
-			MaxResults int           `json:"maxResults"`
-			StartAt    int           `json:"startAt"`
-			Total      int           `json:"total"`
-			Worklogs   []interface{} `json:"worklogs"`
-		} `json:"worklog"`
+		Votes Votes `json:"votes"`
+		Watches Watches `json:"watches"`
+		Worklog Worklog `json:"worklog"`
 		Workratio int `json:"workratio"`
 	} `json:"fields"`
 }

@@ -4,6 +4,7 @@
 
 performance-dashboard
 performance-dashboard.exe
+__debug*
 
 profiles/application-*.yaml
 !profiles/application-default.yaml
