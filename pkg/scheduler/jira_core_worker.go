@@ -31,7 +31,7 @@ func jiraCoreWorker() error {
 	}
 
 	getIssueFieldsApiPath := fmt.Sprintf("/rest/api/2/issue/createmeta?projectKeys=%s&issuetypeNames=Story&expand=projects.issuetypes.fields", projectKey)
-	issueFields := jira.QueryOne("GET", getIssueFieldsApiPath, &model.IssueFields{})
+	issueFields := jira.QueryOne("GET", getIssueFieldsApiPath, &model.IssueFieldsMeta{})
 	if len(issueFields.Projects) == 0 || len(issueFields.Projects[0].Issuetypes) == 0 {
 		log.Printf("Unable to get metadata for issyses of type 'Story' related to project '%s'", projectKey)
 		return nil

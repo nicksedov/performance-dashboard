@@ -6,16 +6,16 @@ import (
 	jira "performance-dashboard/pkg/jira/model"
 )
 
-func SaveIssueMetadata(f *jira.IssueField) error {
+func SaveIssueMetadata(f *jira.IssueFieldMeta) error {
 	_, err := initDb()
 	if err != nil {
 		log.Println("Warning: failed to connect database")
-	 	return err
+		return err
 	}
 	newIssueMetadata := &database.IssueMetadata{
-		Name: f.Name, 
-		Key: f.Key, 
-		Type: f.Schema.Type,
+		Name:   f.Name,
+		Key:    f.Key,
+		Type:   f.Schema.Type,
 		Custom: f.Schema.Custom,
 	}
 	db.Where(&database.IssueMetadata{Name: f.Name}).Assign(newIssueMetadata).FirstOrCreate(newIssueMetadata)

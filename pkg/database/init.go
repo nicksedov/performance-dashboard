@@ -24,12 +24,17 @@ func initDb() (*gorm.DB, error) {
 		db.AutoMigrate(
 			&database.IssueMetadata{},
 			&database.Sprint{},
-			&database.ActiveSprint{})
+			&database.ActiveSprint{},
+			&database.Account{},
+			&database.Issue{},
+			&database.IssueHistory{},
+			&database.IssueStatus{},
+		)
 	}
 	return db, err
 }
 
-func read[T any](selector func(items *[]T, db *gorm.DB)) (*[]T, error) {
+func Read[T any](selector func(items *[]T, db *gorm.DB)) (*[]T, error) {
 	db, err := initDb()
 	if err != nil {
 		log.Fatal("failed to connect database")
@@ -44,5 +49,5 @@ func GetAll[T any]() (*[]T, error) {
 	selectAll := func(items *[]T, db *gorm.DB) {
 		db.Order("id").Find(items)
 	}
-	return read(selectAll)
+	return Read(selectAll)
 }
