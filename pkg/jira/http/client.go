@@ -19,7 +19,7 @@ func QueryOne[T any](apiMethod string, apiPath string, dto *T) *T {
 	return dto
 }
 
-func QueryPaged[T any](apiMethod string, apiPath string, dto *T) *T {
+func QueryPaged[T any](apiMethod string, apiPath string, dto *[]T) *[]T {
 	resp := queryRaw(apiMethod, apiPath)
 	if resp != nil {
 		respHandler := handler.PagedHandler[T]{}

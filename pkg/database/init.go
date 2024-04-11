@@ -24,7 +24,6 @@ func initDb() (*gorm.DB, error) {
 		db.AutoMigrate(
 			&database.IssueMetadata{},
 			&database.Sprint{},
-			&database.ActiveSprint{},
 			&database.Account{},
 			&database.Issue{},
 			&database.IssueHistory{},

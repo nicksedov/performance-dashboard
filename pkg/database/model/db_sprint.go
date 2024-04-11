@@ -12,11 +12,7 @@ type Sprint struct {
 	ActivatedDate time.Time
 	StartDate     time.Time
 	EndDate       time.Time
-}
-
-type ActiveSprint struct {
-	ID            int        `gorm:"primaryKey"`
-	SprintID      int 
+	State         string
 }
 
  

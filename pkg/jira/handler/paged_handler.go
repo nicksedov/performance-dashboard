@@ -11,7 +11,7 @@ import (
 type PagedHandler[T any] struct {
 }
 
-func (h PagedHandler[T]) Handle(resp *http.Response, dto *T) {
+func (h PagedHandler[T]) Handle(resp *http.Response, dto *[]T) {
 
 	// Prepare request
 	defer resp.Body.Close()
@@ -28,9 +28,13 @@ func (h PagedHandler[T]) Handle(resp *http.Response, dto *T) {
 		h.OnError("Error parsing JSON", err)
 	}
 	if len(data.Values) > 0 {
-		value := data.Values[0]
-		jsonListItem, _ := json.Marshal(value)
-		json.Unmarshal(jsonListItem, dto)
+		*dto = make([]T, len(data.Values))
+		for i,value := range data.Values {
+			dtoItem := new(T)
+			jsonListItem, _ := json.Marshal(value)
+			json.Unmarshal(jsonListItem, dtoItem)
+			(*dto)[i] = *dtoItem
+		}
 	}
 }
 

@@ -3,7 +3,6 @@ package scheduler
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"performance-dashboard/pkg/profiles"
 	database "performance-dashboard/pkg/database"
 	dbmodel "performance-dashboard/pkg/database/model"
@@ -17,7 +16,7 @@ const (
 	storyPointCustomType string = "com.pyxis.greenhopper.jira:jsw-story-points"
 	dateTimeCustomType   string = "com.atlassian.jira.plugin.system.customfieldtypes:datetime"
 	datePickerCustomType string = "com.atlassian.jira.plugin.system.customfieldtypes:datepicker"
-	strintCustomType     string = "com.pyxis.greenhopper.jira:gh-sprint"
+	sprintCustomType     string = "com.pyxis.greenhopper.jira:gh-sprint"
 )
 
 func jiraAgileWorker() error {
@@ -26,14 +25,18 @@ func jiraAgileWorker() error {
 	boardId := config.JiraConfig.BoardID
 
 	// Get active sprint
-	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint?state=active", boardId)
-	sprint := jira.QueryPaged("GET", getSprintApiPath, &jiramodel.Sprint{})
+	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint", boardId)
+	sprints := jira.QueryPaged("GET", getSprintApiPath, &[]jiramodel.Sprint{})
 
-	log.Printf("Active Sprint: %d\n", sprint.ID)
+	var activeSprintId int
+	for _,sprint := range *sprints {
+		if sprint.State == "active" {
+			activeSprintId = sprint.ID
+		}
+		database.SaveSprint(&sprint)
+	}
 
-	database.SaveSprint(sprint)
-
-	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, sprint.ID)
+	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, activeSprintId)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
 
 	issueCustomFields, _ := database.Read[dbmodel.IssueMetadata](
@@ -63,7 +66,7 @@ func jiraAgileWorker() error {
 				if customField.Name == "Start date" {
 					fields.StartDate = fieldVal.(string)
 				}
-			} else if customField.Custom == strintCustomType {
+			} else if customField.Custom == sprintCustomType {
 				if customField.Name == "Sprint" {
 					sprints := []jiramodel.IssueSprint{}
 					sprintsJson, _ := json.Marshal(fieldVal)

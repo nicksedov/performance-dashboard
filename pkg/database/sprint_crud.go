@@ -12,9 +12,14 @@ func SaveSprint(s *jira.Sprint) error {
 		log.Println("Warning: failed to connect database")
 		return err
 	}
-	db.Save(&database.Sprint{ID: s.ID, Name: s.Name, Goal: s.Goal, StartDate: s.StartDate, EndDate: s.EndDate})
-	// Create or refress sprintId
-	activeSprint := &database.ActiveSprint{SprintID: s.ID}
-	db.Where(&database.ActiveSprint{ID: 1}).Assign(activeSprint).FirstOrCreate(activeSprint)
+	sprint := database.Sprint{
+		ID: s.ID,
+		Name: s.Name, 
+		Goal: s.Goal, 
+		StartDate: s.StartDate, 
+		EndDate: s.EndDate,
+		State: s.State,
+	}
+	db.Where(&database.Sprint{ID: s.ID}).Assign(&sprint).FirstOrCreate(&sprint)	// Create or refress sprintId
 	return nil
 }
