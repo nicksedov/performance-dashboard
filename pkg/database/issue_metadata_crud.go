@@ -12,12 +12,12 @@ func SaveIssueMetadata(f *jira.IssueFieldMeta) error {
 		log.Println("Warning: failed to connect database")
 		return err
 	}
-	newIssueMetadata := &database.IssueMetadata{
+	newIssueMetadata := database.IssueMetadata{
 		Name:   f.Name,
 		Key:    f.Key,
 		Type:   f.Schema.Type,
 		Custom: f.Schema.Custom,
 	}
-	db.Where(&database.IssueMetadata{Name: f.Name}).Assign(newIssueMetadata).FirstOrCreate(newIssueMetadata)
+	db.Where(database.IssueMetadata{Name: f.Name}).Assign(newIssueMetadata).FirstOrCreate(&newIssueMetadata)
 	return nil
 }

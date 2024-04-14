@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"performance-dashboard/pkg/database/model"
+	database "performance-dashboard/pkg/database/model"
 	"performance-dashboard/pkg/profiles"
 
 	"gorm.io/driver/postgres"
@@ -25,9 +25,10 @@ func initDb() (*gorm.DB, error) {
 			&database.IssueMetadata{},
 			&database.Sprint{},
 			&database.Account{},
+			&database.Poll{},
 			&database.Issue{},
-			&database.IssueHistory{},
-			&database.IssueStatus{},
+			&database.IssueState{},
+			&database.IssueClosedSprint{},
 		)
 	}
 	return db, err

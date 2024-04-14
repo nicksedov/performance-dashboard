@@ -9,3 +9,4 @@ __debug*
 profiles/application-*.yaml
 !profiles/application-default.yaml
 
+*.session.sql

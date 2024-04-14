@@ -3,11 +3,12 @@ package scheduler
 import (
 	"encoding/json"
 	"fmt"
-	"performance-dashboard/pkg/profiles"
 	database "performance-dashboard/pkg/database"
 	dbmodel "performance-dashboard/pkg/database/model"
 	jira "performance-dashboard/pkg/jira/http"
 	jiramodel "performance-dashboard/pkg/jira/model"
+	"performance-dashboard/pkg/profiles"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -29,12 +30,14 @@ func jiraAgileWorker() error {
 	sprints := jira.QueryPaged("GET", getSprintApiPath, &[]jiramodel.Sprint{})
 
 	var activeSprintId int
-	for _,sprint := range *sprints {
+	for _, sprint := range *sprints {
 		if sprint.State == "active" {
 			activeSprintId = sprint.ID
 		}
 		database.SaveSprint(&sprint)
 	}
+
+	poll, _ := database.NewPoll(activeSprintId)
 
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, activeSprintId)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
@@ -45,38 +48,53 @@ func jiraAgileWorker() error {
 		})
 
 	for _, issue := range issues.Issues {
-		fields := jiramodel.IssueFields{}
-		fieldsJson, _ := json.Marshal(issue.Fields)
-		json.Unmarshal(fieldsJson, &fields)
-		// Process custom fields
-		for _, customField := range *issueCustomFields {
-			fieldVal := issue.Fields[customField.Key]
-			if fieldVal == nil {
-				continue
-			}
-			if customField.Custom == storyPointCustomType {
-				fields.StoryPoints = fieldVal.(float64)
-			} else if customField.Custom == dateTimeCustomType {
-				if customField.Name == "Actual start" {
-					fields.ActualStart = fieldVal.(string)
-				} else if customField.Name == "Actual end" {
-					fields.ActualEnd = fieldVal.(string)
-				}
-			} else if customField.Custom == datePickerCustomType {
-				if customField.Name == "Start date" {
-					fields.StartDate = fieldVal.(string)
-				}
-			} else if customField.Custom == sprintCustomType {
-				if customField.Name == "Sprint" {
-					sprints := []jiramodel.IssueSprint{}
-					sprintsJson, _ := json.Marshal(fieldVal)
-					json.Unmarshal(sprintsJson, &sprints)
-					fields.Sprints = sprints
-				}
-			}
+		issueId, subtasks := deepSaveIssue(poll, &issue, *issueCustomFields, 0)
+		for _, subtask := range subtasks {
+			time.Sleep(500 * time.Millisecond)
+			subtaskDetails := jira.QueryOne("GET", subtask.Self, &jiramodel.Issue{})
+			deepSaveIssue(poll, subtaskDetails, *issueCustomFields, issueId)
 		}
-		database.SaveIssue(&issue, &fields)
-
 	}
 	return nil
+}
+
+func deepSaveIssue(poll *dbmodel.Poll, issue *jiramodel.Issue, issueCustomFields []dbmodel.IssueMetadata, parentId int) (int, []jiramodel.Issue) {
+	fields := jiramodel.IssueFields{}
+	fieldsJson, _ := json.Marshal(issue.Fields)
+	json.Unmarshal(fieldsJson, &fields)
+	// Process custom fields
+	for _, customField := range issueCustomFields {
+		fieldVal := issue.Fields[customField.Key]
+		if fieldVal == nil {
+			continue
+		}
+		if customField.Custom == storyPointCustomType {
+			fields.StoryPoints = fieldVal.(float64)
+		} else if customField.Custom == dateTimeCustomType {
+			if customField.Name == "Actual start" {
+				fields.ActualStart = fieldVal.(string)
+			} else if customField.Name == "Actual end" {
+				fields.ActualEnd = fieldVal.(string)
+			}
+		} else if customField.Custom == datePickerCustomType {
+			if customField.Name == "Start date" {
+				fields.StartDate = fieldVal.(string)
+			}
+		} else if customField.Custom == sprintCustomType {
+			if customField.Name == "Sprint" {
+				sprints := []jiramodel.IssueSprint{}
+				sprintsJson, _ := json.Marshal(fieldVal)
+				json.Unmarshal(sprintsJson, &sprints)
+				fields.Sprints = sprints
+			}
+		}
+	}
+	issueState, _ := database.SaveIssue(poll.ID, issue, &fields, parentId)
+
+	if poll.HeadIssueStateID == 0 {
+		poll.HeadIssueStateID = issueState.ID
+		database.UpdatePoll(poll)
+	}
+
+	return issueState.IssueID, fields.Subtasks
 }

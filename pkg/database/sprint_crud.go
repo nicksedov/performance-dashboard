@@ -20,6 +20,6 @@ func SaveSprint(s *jira.Sprint) error {
 		EndDate: s.EndDate,
 		State: s.State,
 	}
-	db.Where(&database.Sprint{ID: s.ID}).Assign(&sprint).FirstOrCreate(&sprint)	// Create or refress sprintId
+	db.Where(database.Sprint{ID: s.ID}).Assign(sprint).FirstOrCreate(&sprint)	// Create or refresh sprint info
 	return nil
 }
