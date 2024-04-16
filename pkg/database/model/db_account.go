@@ -2,11 +2,7 @@ package database
 
 type Account struct {
 	ID           string     `gorm:"unique;primaryKey"`
-	AccountType  string     
-	Active       bool       
+	AccountType  string
+	Role         string     
 	DisplayName  string     
-	EmailAddress string     
-	Key          string     
-	Name         string     
-	TimeZone     string     
 }

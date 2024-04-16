@@ -7,22 +7,18 @@ import (
 	jira "performance-dashboard/pkg/jira/model"
 )
 
-func SaveAccount(acc *jira.Account) error {
+func SaveAccount(actor *jira.RoleActor, role string) error {
 	_, err := initDb()
 	if err != nil {
 		log.Println("Warning: failed to connect database")
 		return err
 	}
-	if acc.AccountID != "" {
+	if actor.ActorUser.AccountID != "" {
 		account := &database.Account{
-			ID:           acc.AccountID,
-			AccountType:  acc.AccountType,
-			Active:       acc.Active,
-			DisplayName:  acc.DisplayName,
-			EmailAddress: acc.EmailAddress,
-			Key:          acc.Key,
-			Name:         acc.Name,
-			TimeZone:     acc.TimeZone,
+			ID:           actor.ActorUser.AccountID,
+			AccountType:  actor.Type,
+			Role:         role,
+			DisplayName:  actor.DisplayName,
 		}
 		db.Save(account)
 	} else {

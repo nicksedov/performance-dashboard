@@ -1,6 +1,10 @@
 package profiles
 
-import "gopkg.in/natefinch/lumberjack.v2"
+import (
+	"time"
+
+	"gopkg.in/natefinch/lumberjack.v2"
+)
 
 type Settings struct {
 	Server struct {
@@ -34,4 +38,14 @@ type Settings struct {
 			Mode string `yaml:"mode"`
 		}
 	} `yaml:"logger"`
+
+	Schedule struct {
+		CoreTask struct {
+			ExecuteOnStartup bool `yaml:"executeOnStartup"`
+			Period time.Duration  `yaml:"period"`
+		} `yaml:"coreTask"`
+		SecondaryTasks struct {
+			DelayedStart time.Duration `yaml:"delayedStart"`
+		} `yaml:"secondaryTasks"`
+	} `yaml:"schedule"`
 }

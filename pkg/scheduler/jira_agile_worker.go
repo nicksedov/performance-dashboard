@@ -41,28 +41,51 @@ func jiraAgileWorker() error {
 
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, activeSprintId)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
-
-	issueCustomFields, _ := database.Read[dbmodel.IssueMetadata](
-		func(items *[]dbmodel.IssueMetadata, db *gorm.DB) {
-			db.Where("key like 'customfield_%'").Find(items)
-		})
+	customFieldsByIssueType := getCustomFields()
 
 	for _, issue := range issues.Issues {
-		issueId, subtasks := deepSaveIssue(poll, &issue, *issueCustomFields, 0)
+		issueId, subtasks := deepSaveIssue(poll, &issue, customFieldsByIssueType, 0)
 		for _, subtask := range subtasks {
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(200 * time.Millisecond)
 			subtaskDetails := jira.QueryOne("GET", subtask.Self, &jiramodel.Issue{})
-			deepSaveIssue(poll, subtaskDetails, *issueCustomFields, issueId)
+			deepSaveIssue(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
 	}
 	return nil
 }
 
-func deepSaveIssue(poll *dbmodel.Poll, issue *jiramodel.Issue, issueCustomFields []dbmodel.IssueMetadata, parentId int) (int, []jiramodel.Issue) {
+func getCustomFields() *map[string][]dbmodel.IssueMetadata {
+	customFields, _ := database.Read[dbmodel.IssueMetadata](
+		func(items *[]dbmodel.IssueMetadata, db *gorm.DB) {
+			db.Where("key like 'customfield_%'").Find(items)
+		})
+	customFieldsByIssueType := make(map[string][]dbmodel.IssueMetadata)
+	for _, customField := range *customFields {
+		issueTypeName := customField.IssueTypeName
+		untranslatedName := customField.UntranslatedName
+		keys := make([]string, 0, 2) 
+		keys = append(keys, issueTypeName) 
+		if untranslatedName != "" && untranslatedName != issueTypeName {
+			keys = append(keys, untranslatedName)
+		}
+		for _, key := range keys {
+			if customFieldsByIssueType[key] == nil {
+				customFieldsByIssueType[key] = make([]dbmodel.IssueMetadata, 0, len(*customFields))
+			} 
+			cf := customFieldsByIssueType[key]
+			customFieldsByIssueType[key] = append(cf, customField)
+		}
+	}
+	return &customFieldsByIssueType
+}
+
+func deepSaveIssue(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIssueType *map[string][]dbmodel.IssueMetadata, parentId int) (int, []jiramodel.Issue) {
 	fields := jiramodel.IssueFields{}
 	fieldsJson, _ := json.Marshal(issue.Fields)
 	json.Unmarshal(fieldsJson, &fields)
 	// Process custom fields
+	issueTypeName := fields.Issuetype.Name
+	issueCustomFields := (*customFieldsByIssueType)[issueTypeName]
 	for _, customField := range issueCustomFields {
 		fieldVal := issue.Fields[customField.Key]
 		if fieldVal == nil {

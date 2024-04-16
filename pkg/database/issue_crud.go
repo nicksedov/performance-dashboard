@@ -19,10 +19,6 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) (
 	actualStart, _ := time.Parse(ISO8601_LAYOUT, f.ActualStart)
 	actualEnd, _ := time.Parse(ISO8601_LAYOUT, f.ActualEnd)
 
-	SaveAccount(&f.Creator)
-	SaveAccount(&f.Reporter)
-	SaveAccount(&f.Assignee)
-
 	newIssue := database.Issue{
 		Key:            iss.Key,
 		Type:           f.Issuetype.ID,
@@ -36,7 +32,6 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) (
 		ActualSprintID: f.Sprint.ID,
 		Subtask: 		f.Issuetype.Subtask,
 		ParentID:       parentId,
-
 	}
 
 	db.Where(database.Issue{Key: iss.Key}).Assign(newIssue).FirstOrCreate(&newIssue)

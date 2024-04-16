@@ -1,21 +1,23 @@
 package jira
 
-type Role struct {
-	Actors []struct {
-		ActorGroup struct {
-			DisplayName string `json:"displayName"`
-			GroupID     string `json:"groupId"`
-			Name        string `json:"name"`
-		} `json:"actorGroup,omitempty"`
+type RoleActor struct {
+	ActorGroup struct {
 		DisplayName string `json:"displayName"`
-		ID          int    `json:"id"`
-		Name        string `json:"name,omitempty"`
-		Type        string `json:"type"`
-		User        string `json:"user,omitempty"`
-		ActorUser   struct {
-			AccountID string `json:"accountId"`
-		} `json:"actorUser,omitempty"`
-	} `json:"actors"`
+		GroupID     string `json:"groupId"`
+		Name        string `json:"name"`
+	} `json:"actorGroup,omitempty"`
+	DisplayName string `json:"displayName"`
+	ID          int    `json:"id"`
+	Name        string `json:"name,omitempty"`
+	Type        string `json:"type"`
+	User        string `json:"user,omitempty"`
+	ActorUser   struct {
+		AccountID string `json:"accountId"`
+	} `json:"actorUser,omitempty"`
+}
+
+type Role struct {
+	Actors []RoleActor `json:"actors"`
 	Description string `json:"description"`
 	ID          int    `json:"id"`
 	Name        string `json:"name"`

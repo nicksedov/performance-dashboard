@@ -38,3 +38,12 @@ logger:
     compress:   true
   console:
     mode: off   # stdout, stderr or off
+
+# Periodic tasks configuration
+schedule:
+  # Core task (reading project and issues metadata)    
+  coreTask:
+    executeOnStartup: true
+    period: 10m0s
+  secondaryTasks:
+    delayedStart: 5s

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/madflojo/tasks"
+	"performance-dashboard/pkg/profiles"
 )
 
 var scheduler *tasks.Scheduler
@@ -21,9 +22,10 @@ func initScheduler() *tasks.Scheduler {
 func Schedule() {
 
 	scheduler := initScheduler()
+	config := profiles.GetSettings()
 
-	duration := time.Duration(15 * time.Minute)
-	timeGap := time.Duration(10 * time.Second)
+	duration := config.Schedule.CoreTask.Period
+	timeGap := config.Schedule.SecondaryTasks.DelayedStart
 
 	projectTask := tasks.Task{
 		TaskFunc:          jiraCoreWorker,
@@ -48,7 +50,9 @@ func Schedule() {
 	}
 
 	// Initial workers execution
-	go jiraCoreWorker()
-	time.Sleep(timeGap)
-	go jiraAgileWorker()
+	if config.Schedule.CoreTask.ExecuteOnStartup {
+		go jiraCoreWorker()
+		time.Sleep(timeGap)
+		go jiraAgileWorker()
+	}
 }
