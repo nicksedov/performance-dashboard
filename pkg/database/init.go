@@ -17,9 +17,16 @@ func initDb() (*gorm.DB, error) {
 	var err error
 	if db == nil {
 		dbConfig := profiles.GetSettings().DbConfig
+		var dsn string
 		dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
-		dsn := fmt.Sprintf(dsnFormat,
-			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
+		if dbConfig.SearchPath != "" {
+			dsnFormat += " search_path=%s"
+			dsn = fmt.Sprintf(dsnFormat,
+				dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode, dbConfig.SearchPath)
+		} else {
+			dsn = fmt.Sprintf(dsnFormat,
+				dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
+		}
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		db.AutoMigrate(
 			&database.IssueMetadata{},
