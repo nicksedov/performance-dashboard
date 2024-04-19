@@ -7,4 +7,5 @@ type Poll struct {
 	Timestamp        time.Time
 	ActiveSprint     int
 	HeadIssueStateID int
+	Committed        bool `gorm:"default:false"`
 }

@@ -12,7 +12,7 @@ func NewPoll(activeSprint int) (*database.Poll, error) {
 		log.Println("Warning: failed to connect database")
 		return nil, err
 	}
-	poll := &database.Poll{ Timestamp: time.Now(), ActiveSprint: activeSprint }
+	poll := &database.Poll{ Timestamp: time.Now(), ActiveSprint: activeSprint, Committed: false }
 	db.Save(poll)
 	return poll, nil
 }

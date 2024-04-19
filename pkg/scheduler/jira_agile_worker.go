@@ -51,6 +51,8 @@ func jiraAgileWorker() error {
 			deepSaveIssue(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
 	}
+	poll.Committed = true
+	database.UpdatePoll(poll)
 	return nil
 }
 
@@ -116,7 +118,6 @@ func deepSaveIssue(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIss
 
 	if poll.HeadIssueStateID == 0 {
 		poll.HeadIssueStateID = issueState.ID
-		database.UpdatePoll(poll)
 	}
 
 	return issueState.IssueID, fields.Subtasks
