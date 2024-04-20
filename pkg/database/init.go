@@ -23,6 +23,7 @@ func initDb() (*gorm.DB, error) {
 			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if dbConfig.SearchPath != "" {
+			log.Printf("Switching database schema to '%s'\n", dbConfig.SearchPath)
 			db.Exec("set search_path to ?", dbConfig.SearchPath)
 		}
 		db.AutoMigrate(
