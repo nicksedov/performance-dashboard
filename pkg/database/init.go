@@ -18,23 +18,17 @@ func initDb() (*gorm.DB, error) {
 	var err error
 	if db == nil {
 		dbConfig := profiles.GetSettings().DbConfig
-		var dsn string
 		dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
-		dsn = fmt.Sprintf(dsnFormat,
+		dsn := fmt.Sprintf(dsnFormat,
 			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
-		gormCfg := &gorm.Config{}
+		gormCfg := &gorm.Config{ PrepareStmt: false }
 		if dbConfig.SearchPath != "" {
 			searchPathNamingStrategy := schema.NamingStrategy{
 				TablePrefix: dbConfig.SearchPath + ".",
-				SingularTable: false,
 			}
 			gormCfg.NamingStrategy = searchPathNamingStrategy
 		}
 		db, err = gorm.Open(postgres.Open(dsn), gormCfg)
-		if dbConfig.SearchPath != "" {
-			log.Printf("Switching database schema to '%s'\n", dbConfig.SearchPath)
-			db.Exec("set search_path to ?", dbConfig.SearchPath)
-		}
 		db.AutoMigrate(
 			&database.IssueMetadata{},
 			&database.Sprint{},
