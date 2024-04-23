@@ -1,8 +1,10 @@
 package database
 
 type Account struct {
-	ID           string     `gorm:"unique;primaryKey"`
+	ID           int     `gorm:"unique;primaryKey"`
+	AccountID    string
 	AccountType  string
 	Role         string     
-	DisplayName  string     
+	DisplayName  string  `gorm:"index:idx_account_displayname"`
+	EmailAddress string     
 }
