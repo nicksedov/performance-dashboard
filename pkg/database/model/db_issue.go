@@ -7,9 +7,9 @@ type Issue struct {
 	Key            string
 	Type           string
 	Summary        string
-	CreatorID      string
+	CreatorID      int
 	Created        time.Time
-	ReporterID     string
+	ReporterID     int
 	Description    string
 	ActualStart    time.Time
 	ActualEnd      time.Time
@@ -22,7 +22,7 @@ type IssueState struct {
 	ID             int `gorm:"unique;primaryKey"`
 	PollID         int
 	IssueID        int
-	AssigneeID     string
+	AssigneeID     int
 	StoryPoints    float64
 	StatusCategory string
 	StatusID       string

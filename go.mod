@@ -33,6 +33,7 @@ require (
 
 require (
 	github.com/magiconair/properties v1.8.7
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/sfomuseum/go-edtf v1.1.1
 	github.com/stretchr/testify v1.9.0
