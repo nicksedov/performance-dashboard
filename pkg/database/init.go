@@ -9,6 +9,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -21,7 +22,10 @@ func initDb() (*gorm.DB, error) {
 		dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
 		dsn := fmt.Sprintf(dsnFormat,
 			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
-		gormCfg := &gorm.Config{ PrepareStmt: false }
+		gormCfg := &gorm.Config{ 
+			PrepareStmt: false,
+			Logger: logger.Default,
+		 }
 		if dbConfig.SearchPath != "" {
 			searchPathNamingStrategy := schema.NamingStrategy{
 				TablePrefix: dbConfig.SearchPath + ".",
