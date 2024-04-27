@@ -41,6 +41,7 @@ func jiraCoreWorker() error {
 		storyFields := storyMetadata.Fields
 		issueTypeName := storyMetadata.Name
 		untranslatedName := storyMetadata.UntranslatedName
+		log.Printf("Collecting metadata for issues of type '%s'\n", issueTypeName)
 		for _, val := range storyFields {
 			database.SaveIssueMetadata(&val, issueTypeName, untranslatedName)
 		}

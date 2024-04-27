@@ -51,8 +51,7 @@ func jiraAgileWorker() error {
 			deepSaveIssue(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
 	}
-	poll.Committed = true
-	database.UpdatePoll(poll)
+	database.CommitPoll(poll)
 	return nil
 }
 
@@ -65,15 +64,15 @@ func getCustomFields() *map[string][]dbmodel.IssueMetadata {
 	for _, customField := range *customFields {
 		issueTypeName := customField.IssueTypeName
 		untranslatedName := customField.UntranslatedName
-		keys := make([]string, 0, 2) 
-		keys = append(keys, issueTypeName) 
+		keys := make([]string, 0, 2)
+		keys = append(keys, issueTypeName)
 		if untranslatedName != "" && untranslatedName != issueTypeName {
 			keys = append(keys, untranslatedName)
 		}
 		for _, key := range keys {
 			if customFieldsByIssueType[key] == nil {
 				customFieldsByIssueType[key] = make([]dbmodel.IssueMetadata, 0, len(*customFields))
-			} 
+			}
 			cf := customFieldsByIssueType[key]
 			customFieldsByIssueType[key] = append(cf, customField)
 		}
