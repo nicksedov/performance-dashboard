@@ -38,7 +38,12 @@ func jiraAgileWorker() error {
 		}
 		database.SaveSprint(&sprint)
 	}
-	// Polling issue states in active sprint 
+	if activeSprintId == 0 {
+		log.Println("No active sprint found, bypassing issue states poll")
+		return nil
+	}
+	 
+	// Polling issue states in active sprint
 	poll, _ := database.NewPoll(activeSprintId)
 	log.Println("Collecting issue statuses for active sprint")
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardId, activeSprintId)
