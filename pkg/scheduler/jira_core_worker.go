@@ -19,17 +19,22 @@ func jiraCoreWorker() error {
 	getProjectApiPath := fmt.Sprintf("/rest/api/2/project/%s", projectKey)
 	project := jira.QueryOne("GET", getProjectApiPath, &model.Project{})
 
+	// Get project roles
 	roles := project.Roles
-
+	log.Printf("Collecting information about actors in project '%s'\n", projectKey)
 	for _, getRoleApi := range roles {
 		time.Sleep(200 * time.Millisecond)
 		role := jira.QueryOne("GET", getRoleApi, &model.Role{})
-		log.Printf("Project %s has role %s with %d actors\n", projectKey, role.Name, len(role.Actors))
-		for _, actor := range role.Actors {
-			database.SaveAccount(&actor, role.Name)
+		actorsCount := len(role.Actors)
+		if actorsCount > 0 {
+			log.Printf("Found %d actors with role %s\n", actorsCount, role.Name)
+			for _, actor := range role.Actors {
+				database.SaveAccount(&actor, role.Name)
+			}
 		}
 	}
 
+	// Get metadata of issues related to the project
 	getIssueFieldsApiPath := fmt.Sprintf("/rest/api/2/issue/createmeta?projectKeys=%s&expand=projects.issuetypes.fields", projectKey)
 	issueFields := jira.QueryOne("GET", getIssueFieldsApiPath, &model.IssueFieldsMeta{})
 	if len(issueFields.Projects) == 0 || len(issueFields.Projects[0].Issuetypes) == 0 {

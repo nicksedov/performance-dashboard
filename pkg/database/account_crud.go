@@ -13,7 +13,7 @@ func SaveAccount(actor *jira.RoleActor, role string) error {
 		return err
 	}
 
-	account := &database.Account{
+	newAccount := database.Account{
 		ID:           actor.ID,
 		AccountID:    actor.ActorUser.AccountID,
 		AccountType:  actor.Type,
@@ -21,7 +21,18 @@ func SaveAccount(actor *jira.RoleActor, role string) error {
 		DisplayName:  actor.DisplayName,
 		EmailAddress: actor.EmailAddress,
 	}
-	db.Save(account)
+	existing := database.Account{}
+	tx := db.Where(database.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
+	if tx.Error == nil {
+		newAccount.ID = existing.ID
+		if existing != newAccount {
+			db.Save(&newAccount)
+		} else {
+			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, role)
+		}
+	} else {
+		db.Save(&newAccount)
+	}
 
 	return nil
 }

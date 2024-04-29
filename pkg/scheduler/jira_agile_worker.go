@@ -3,6 +3,7 @@ package scheduler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	database "performance-dashboard/pkg/database"
 	dbmodel "performance-dashboard/pkg/database/model"
 	jira "performance-dashboard/pkg/jira/http"
@@ -32,23 +33,24 @@ func jiraAgileWorker() error {
 	var activeSprintId int
 	for _, sprint := range *sprints {
 		if sprint.State == "active" {
+			log.Printf("Active sprint found: '%s'\n", sprint.Name)
 			activeSprintId = sprint.ID
 		}
 		database.SaveSprint(&sprint)
 	}
-
+	// Polling issue states in active sprint 
 	poll, _ := database.NewPoll(activeSprintId)
-
-	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue", boardId, activeSprintId)
+	log.Println("Collecting issue statuses for active sprint")
+	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardId, activeSprintId)
 	issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
 	customFieldsByIssueType := getCustomFields()
 
 	for _, issue := range issues.Issues {
-		issueId, subtasks := deepSaveIssue(poll, &issue, customFieldsByIssueType, 0)
+		issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
 		for _, subtask := range subtasks {
 			time.Sleep(200 * time.Millisecond)
 			subtaskDetails := jira.QueryOne("GET", subtask.Self, &jiramodel.Issue{})
-			deepSaveIssue(poll, subtaskDetails, customFieldsByIssueType, issueId)
+			saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
 	}
 	database.CommitPoll(poll)
@@ -80,7 +82,7 @@ func getCustomFields() *map[string][]dbmodel.IssueMetadata {
 	return &customFieldsByIssueType
 }
 
-func deepSaveIssue(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIssueType *map[string][]dbmodel.IssueMetadata, parentId int) (int, []jiramodel.Issue) {
+func saveIssueState(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIssueType *map[string][]dbmodel.IssueMetadata, parentId int) (int, []jiramodel.Issue) {
 	fields := jiramodel.IssueFields{}
 	fieldsJson, _ := json.Marshal(issue.Fields)
 	json.Unmarshal(fieldsJson, &fields)

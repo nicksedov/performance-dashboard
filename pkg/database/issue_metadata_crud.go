@@ -4,7 +4,6 @@ import (
 	"log"
 	database "performance-dashboard/pkg/database/model"
 	jira "performance-dashboard/pkg/jira/model"
-	"reflect"
 )
 
 func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslatedName string) error {
@@ -25,7 +24,7 @@ func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslate
 	tx := db.Where(database.IssueMetadata{Name: f.Name, IssueTypeName: issueTypeName}).First(&existing)
 	if tx.Error == nil {
 		newIssueMetadata.ID = existing.ID
-		if !reflect.DeepEqual(existing, newIssueMetadata) {
+		if existing != newIssueMetadata {
 			db.Save(&newIssueMetadata)
 		} else {
 			log.Printf("Issue field '%s' of type '%s' is already known\n", f.Name, issueTypeName)
@@ -33,6 +32,5 @@ func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslate
 	} else {
 		db.Save(&newIssueMetadata)
 	}
-	//db.Where(database.IssueMetadata{Name: f.Name, IssueTypeName: issueTypeName}).Assign(newIssueMetadata).FirstOrCreate(&newIssueMetadata)
 	return nil
 }
