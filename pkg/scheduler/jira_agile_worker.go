@@ -99,7 +99,7 @@ func saveIssueState(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIs
 		if fieldVal == nil {
 			continue
 		}
-		if customField.Custom == storyPointCustomType {
+		if customField.Custom == storyPointCustomType || customField.Name == "Story Points" {
 			fields.StoryPoints = fieldVal.(float64)
 		} else if customField.Custom == dateTimeCustomType {
 			if customField.Name == "Actual start" {

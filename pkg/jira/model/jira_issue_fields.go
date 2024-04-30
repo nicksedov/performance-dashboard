@@ -5,6 +5,7 @@ type IssueFieldMeta struct {
 	HasDefaultValue bool     `json:"hasDefaultValue"`
 	Key             string   `json:"key"`
 	Name            string   `json:"name"`
+	FieldID         string   `json:"fieldId"`
 	Operations      []string `json:"operations"`
 	Required        bool     `json:"required"`
 	Schema          struct {

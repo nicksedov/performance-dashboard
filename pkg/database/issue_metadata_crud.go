@@ -12,9 +12,15 @@ func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslate
 		log.Println("Warning: failed to connect database")
 		return err
 	}
+	var key string
+	if f.Key != "" {
+		key = f.Key
+	} else {
+		key = f.FieldID
+	}
 	newIssueMetadata := database.IssueMetadata{
 		Name:   f.Name,
-		Key:    f.Key,
+		Key:    key,
 		Type:   f.Schema.Type,
 		Custom: f.Schema.Custom,
 		IssueTypeName: issueTypeName,
