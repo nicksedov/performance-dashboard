@@ -20,6 +20,18 @@ func SaveSprint(s *jira.Sprint) error {
 		EndDate: s.EndDate,
 		State: s.State,
 	}
-	db.Where(database.Sprint{ID: s.ID}).Assign(sprint).FirstOrCreate(&sprint)	// Create or refresh sprint info
+	existing := database.Sprint{}
+	tx := db.Where(database.Sprint{ID: sprint.ID}).First(&existing)
+	if tx.Error == nil {
+		sprint.ID = existing.ID
+		if !existing.Equals(&sprint) {
+			db.Save(&sprint)
+		} else {
+			log.Printf("Sprint with ID '%d' is already known\n", sprint.ID)
+		}
+	} else {
+		db.Save(&sprint)
+	}
+
 	return nil
 }

@@ -16,21 +16,23 @@ type Issue struct {
 	ActualSprintID int
 	Subtask        bool `gorm:"default:false"`
 	ParentID       int
+	CurrentState   string
 }
 
-func (this *Issue) Equals(that *Issue) bool {
-	return this.Key == that.Key && 
-		this.Type == that.Type && 
-		this.Summary == that.Summary &&
-		this.CreatorID == that.CreatorID &&
-		this.Created.Equal(that.Created) &&
-		this.ReporterID == that.ReporterID &&
-		this.Description == that.Description &&
-		this.ActualStart.Equal(that.ActualStart) &&
-		this.ActualEnd.Equal(that.ActualEnd) &&
-		this.ActualSprintID == that.ActualSprintID &&
-		this.Subtask == that.Subtask &&
-		this.ParentID == that.ParentID
+func (it *Issue) Equals(that *Issue) bool {
+	return it.Key == that.Key &&
+		it.Type == that.Type &&
+		it.Summary == that.Summary &&
+		it.CreatorID == that.CreatorID &&
+		it.Created.Equal(that.Created) &&
+		it.ReporterID == that.ReporterID &&
+		it.Description == that.Description &&
+		it.ActualStart.Equal(that.ActualStart) &&
+		it.ActualEnd.Equal(that.ActualEnd) &&
+		it.ActualSprintID == that.ActualSprintID &&
+		it.Subtask == that.Subtask &&
+		it.ParentID == that.ParentID &&
+		it.CurrentState == that.CurrentState
 }
 
 type IssueState struct {
@@ -43,8 +45,14 @@ type IssueState struct {
 	StatusID       string
 }
 
-type IssueClosedSprint struct {
+type IssueSprint struct {
 	ID       int `gorm:"unique;primaryKey"`
 	IssueID  int
 	SprintID int
+}
+
+type IssueAssigneeTransitions struct {
+	IssueID        int `gorm:"unique;primaryKey"`
+	LastAssigneeID int
+	Transitions    int `gorm:"default:0"`
 }
