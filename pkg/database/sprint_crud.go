@@ -16,6 +16,7 @@ func SaveSprint(s *jira.Sprint) error {
 		ID: s.ID,
 		Name: s.Name, 
 		Goal: s.Goal, 
+		CreatedDate: s.CreatedDate,
 		StartDate: s.StartDate, 
 		EndDate: s.EndDate,
 		State: s.State,
