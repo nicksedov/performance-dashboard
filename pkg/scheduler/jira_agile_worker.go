@@ -30,35 +30,42 @@ func jiraAgileWorker() error {
 	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint", boardId)
 	sprints := jira.QueryPaged("GET", getSprintApiPath, &[]jiramodel.Sprint{})
 
-	var activeSprintId int
+	var sprintIds map[int]bool = make(map[int]bool, len(*sprints))
 	for _, sprint := range *sprints {
 		if sprint.State == "active" {
 			log.Printf("Active sprint found: '%s'\n", sprint.Name)
-			activeSprintId = sprint.ID
+			sprintIds[sprint.ID] = false
+		} else if sprint.State == "closed" {
+			if database.CompletionPollRequired(sprint.ID) {
+				sprintIds[sprint.ID] = true
+			}
 		}
 		database.SaveSprint(&sprint)
 	}
-	if activeSprintId == 0 {
-		log.Println("No active sprint found, bypassing issue states poll")
+	if len(sprintIds) == 0 {
+		log.Println("No sprints selected for processing, bypassing issue states poll")
 		return nil
 	}
 	 
-	// Polling issue states in active sprint
-	poll, _ := database.NewPoll(activeSprintId)
-	log.Println("Collecting issue statuses for active sprint")
-	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardId, activeSprintId)
-	issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
-	customFieldsByIssueType := getCustomFields()
+	// Polling issue states for
+	for sprintID, isCompletionPoll := range sprintIds {
+		poll, _ := database.NewPoll(sprintID)
+		log.Printf("Collecting issue statuses for sprint with ID '%d'\n", sprintID)
+		getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardId, sprintID)
+		issues := jira.QueryOne("GET", getIssuesApiPath, &jiramodel.Issues{})
+		customFieldsByIssueType := getCustomFields()
 
-	for _, issue := range issues.Issues {
-		issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
-		for _, subtask := range subtasks {
-			time.Sleep(200 * time.Millisecond)
-			subtaskDetails := jira.QueryOne("GET", subtask.Self, &jiramodel.Issue{})
-			saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
+		for _, issue := range issues.Issues {
+			issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
+			for _, subtask := range subtasks {
+				time.Sleep(200 * time.Millisecond)
+				subtaskDetails := jira.QueryOne("GET", subtask.Self, &jiramodel.Issue{})
+				saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
+			}
 		}
+		database.CommitPoll(poll)
+		database.UpdateSprintPoll(poll.ActiveSprint, poll.ID, isCompletionPoll)
 	}
-	database.CommitPoll(poll)
 	return nil
 }
 

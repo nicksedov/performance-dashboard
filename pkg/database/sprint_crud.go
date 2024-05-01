@@ -22,18 +22,42 @@ func SaveSprint(s *jira.Sprint) error {
 		State: s.State,
 	}
 	existing := database.Sprint{}
-	tx := db.Where(database.Sprint{ID: sprint.ID}).First(&existing)
+	tx := db.Where(database.Sprint{ID: s.ID}).First(&existing)
 	if tx.Error == nil {
 		if !existing.Equals(&sprint) {
-			sprint.LastPollID = existing.LastPollID
 			db.Save(&sprint)
 		} else {
 			log.Printf("Sprint with ID '%d' is already known\n", sprint.ID)
 		}
 	} else {
-	    log.Printf("A new sprint '%s' will be created\n", sprint.Name)
+	    log.Printf("A new sprint with ID '%d' and name '%s' will be created\n", s.ID, sprint.Name)
 		db.Save(&sprint)
 	}
 
 	return nil
 }
+
+func CompletionPollRequired(sprintID int) bool {
+	db, err := initDb()
+	if err != nil {
+		log.Println("Warning: failed to connect database")
+		return false
+	}
+	sprintPoll := database.SprintPoll{CompletionPoll: false}
+	db.Where(database.SprintPoll{ID: sprintID}).First(&sprintPoll)
+	return !sprintPoll.CompletionPoll
+}
+
+func UpdateSprintPoll(sprintID int, pollId int, isCompletionPoll bool) {
+	db, err := initDb()
+	if err != nil {
+		log.Println("Warning: failed to connect database")
+	}
+	sprintPoll := database.SprintPoll{
+		ID: sprintID,
+		LastPollID: pollId,
+		CompletionPoll: isCompletionPoll,
+	}
+	db.Save(&sprintPoll)
+}
+

@@ -25,7 +25,5 @@ func CommitPoll(poll *database.Poll) error {
 	}
 	poll.Committed = true
 	db.Save(poll)
-	sprintToUpdate := database.Sprint{ID: poll.ActiveSprint}
-	db.Model(&sprintToUpdate).Update("last_poll_id", poll.ID)
 	return nil
 }
