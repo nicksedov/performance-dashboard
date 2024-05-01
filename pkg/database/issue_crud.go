@@ -127,18 +127,25 @@ func saveIssueSprints(issueId int, f *jira.IssueFields) {
 }
 
 func saveOrUpdateAssigneeTransitions(issueId int, assigneeId int) {
+	
+	if assigneeId == 0 {
+		return; // Assignee absence or removal is not a transition 
+	}
+
 	existingTransitions,_ := Read(
 		func(items *[]database.IssueAssigneeTransitions, db *gorm.DB) {
 			db.Where(database.IssueAssigneeTransitions{IssueID: issueId}).Find(items)
 		})
-	transitionsExist := len(*existingTransitions) != 0
-	if !transitionsExist && assigneeId != 0 {
-		newTransition := database.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
-		db.Save(&newTransition)
-	} else if transitionsExist && (*existingTransitions)[0].LastAssigneeID != assigneeId {
+	transitionsExist := len(*existingTransitions) > 0
+	if transitionsExist {
 		update := (*existingTransitions)[0]
-		update.Transitions = update.Transitions + 1
-		update.LastAssigneeID = assigneeId
-		db.Save(&update)
+		if update.LastAssigneeID != assigneeId {
+			update.Transitions = update.Transitions + 1
+			update.LastAssigneeID = assigneeId
+			db.Save(&update)
+		} else {
+			newTransition := database.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
+			db.Save(&newTransition)
+		}
 	}
 }
