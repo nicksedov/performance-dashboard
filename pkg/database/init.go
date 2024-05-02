@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"log"
+	"time"
 
 	database "performance-dashboard/pkg/database/model"
 	"performance-dashboard/pkg/profiles"
@@ -15,7 +15,7 @@ import (
 
 var db *gorm.DB
 
-func initDb() (*gorm.DB, error) {
+func InitializeDB() error {
 	var err error
 	if db == nil {
 		dbConfig := profiles.GetSettings().DbConfig
@@ -33,7 +33,11 @@ func initDb() (*gorm.DB, error) {
 			gormCfg.NamingStrategy = searchPathNamingStrategy
 		}
 		db, err = gorm.Open(postgres.Open(dsn), gormCfg)
+		if err != nil {
+			return err
+		}
 		db.AutoMigrate(
+			&database.ApplicationLog{},
 			&database.IssueMetadata{},
 			&database.Sprint{},
 			&database.SprintPoll{},
@@ -44,16 +48,15 @@ func initDb() (*gorm.DB, error) {
 			&database.IssueSprint{},
 			&database.IssueAssigneeTransitions{},
 		)
+		if db.Error == nil {
+			db.Save(&database.ApplicationLog{ Timestamp: time.Now(), Log: "Database connection created" })
+		}
+		err = db.Error
 	}
-	return db, err
+	return err
 }
 
 func Read[T any](selector func(items *[]T, db *gorm.DB)) (*[]T, error) {
-	db, err := initDb()
-	if err != nil {
-		log.Fatal("failed to connect database")
-		return nil, err
-	}
 	items := new([]T)
 	selector(items, db)
 	return items, nil

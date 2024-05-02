@@ -6,12 +6,7 @@ import (
 	jira "performance-dashboard/pkg/jira/model"
 )
 
-func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslatedName string) error {
-	_, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-		return err
-	}
+func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslatedName string) {
 	var key string
 	if f.Key != "" {
 		key = f.Key
@@ -38,5 +33,4 @@ func SaveIssueMetadata(f *jira.IssueFieldMeta, issueTypeName string, untranslate
 	} else {
 		db.Save(&newIssueMetadata)
 	}
-	return nil
 }

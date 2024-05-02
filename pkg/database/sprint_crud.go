@@ -6,12 +6,8 @@ import (
 	"performance-dashboard/pkg/jira/model"
 )
 
-func SaveSprint(s *jira.Sprint) error {
-	db, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-		return err
-	}
+func SaveSprint(s *jira.Sprint)  {
+	
 	sprint := database.Sprint{
 		ID: s.ID,
 		Name: s.Name, 
@@ -33,26 +29,15 @@ func SaveSprint(s *jira.Sprint) error {
 	    log.Printf("A new sprint with ID '%d' and name '%s' will be created\n", s.ID, sprint.Name)
 		db.Save(&sprint)
 	}
-
-	return nil
 }
 
 func CompletionPollRequired(sprintID int) bool {
-	db, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-		return false
-	}
 	sprintPoll := database.SprintPoll{CompletionPoll: false}
 	db.Where(database.SprintPoll{ID: sprintID}).First(&sprintPoll)
 	return !sprintPoll.CompletionPoll
 }
 
 func UpdateSprintPoll(sprintID int, pollId int, isCompletionPoll bool) {
-	db, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-	}
 	sprintPoll := database.SprintPoll{
 		ID: sprintID,
 		LastPollID: pollId,

@@ -17,12 +17,8 @@ const ISO8601_LAYOUT string = "2006-01-02T15:04:05Z0700"
 var accountIdCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 var accountNameCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 
-func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) (*database.IssueState, error) {
-	_, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-		return nil, err
-	}
+func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *database.IssueState {
+	
 	created, _ := time.Parse(ISO8601_LAYOUT, f.Created)
 	actualStart, _ := time.Parse(ISO8601_LAYOUT, f.ActualStart)
 	actualEnd, _ := time.Parse(ISO8601_LAYOUT, f.ActualEnd)
@@ -63,7 +59,7 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) (
 	issueStateRecord := saveIssueState(pollId, newIssue.ID, assignee.ID, f)
 	saveIssueSprints(newIssue.ID, f)
 	saveOrUpdateAssigneeTransitions(newIssue.ID, assignee.ID)
-	return issueStateRecord, nil
+	return issueStateRecord
 }
 
 func getAccountMetadata(acc *jira.Account) *database.Account {

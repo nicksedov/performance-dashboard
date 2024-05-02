@@ -6,13 +6,7 @@ import (
 	jira "performance-dashboard/pkg/jira/model"
 )
 
-func SaveAccount(actor *jira.RoleActor, role string) error {
-	_, err := initDb()
-	if err != nil {
-		log.Println("Warning: failed to connect database")
-		return err
-	}
-
+func SaveAccount(actor *jira.RoleActor, role string) {
 	newAccount := database.Account{
 		ID:           actor.ID,
 		AccountID:    actor.ActorUser.AccountID,
@@ -33,6 +27,4 @@ func SaveAccount(actor *jira.RoleActor, role string) error {
 	} else {
 		db.Save(&newAccount)
 	}
-
-	return nil
 }

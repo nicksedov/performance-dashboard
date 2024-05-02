@@ -127,7 +127,7 @@ func saveIssueState(poll *dbmodel.Poll, issue *jiramodel.Issue, customFieldsByIs
 			}
 		}
 	}
-	issueState, _ := database.SaveIssue(poll.ID, issue, &fields, parentId)
+	issueState := database.SaveIssue(poll.ID, issue, &fields, parentId)
 
 	if poll.HeadIssueStateID == 0 {
 		poll.HeadIssueStateID = issueState.ID
