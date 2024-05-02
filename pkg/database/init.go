@@ -36,7 +36,7 @@ func InitializeDB() error {
 		if err != nil {
 			return err
 		}
-		db.AutoMigrate(
+		err = db.AutoMigrate(
 			&database.ApplicationLog{},
 			&database.IssueMetadata{},
 			&database.Sprint{},
@@ -48,10 +48,10 @@ func InitializeDB() error {
 			&database.IssueSprint{},
 			&database.IssueAssigneeTransitions{},
 		)
-		if db.Error == nil {
-			db.Save(&database.ApplicationLog{ Timestamp: time.Now(), Log: "Database connection created" })
+		if err == nil {
+			tx := db.Save(&database.ApplicationLog{ Timestamp: time.Now(), Log: "Database connection created" })
+			err = tx.Error
 		}
-		err = db.Error
 	}
 	return err
 }
