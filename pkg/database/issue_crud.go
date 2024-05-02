@@ -139,9 +139,9 @@ func saveOrUpdateAssigneeTransitions(issueId int, assigneeId int) {
 			update.Transitions = update.Transitions + 1
 			update.LastAssigneeID = assigneeId
 			db.Save(&update)
-		} else {
-			newTransition := database.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
-			db.Save(&newTransition)
 		}
+	} else {
+		newTransition := database.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
+		db.Save(&newTransition)
 	}
 }
