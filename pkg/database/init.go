@@ -32,7 +32,11 @@ func InitializeDB() error {
 			}
 			gormCfg.NamingStrategy = searchPathNamingStrategy
 		}
-		db, err = gorm.Open(postgres.Open(dsn), gormCfg)
+		postgresCfg := postgres.Config{
+			DSN: dsn,
+			PreferSimpleProtocol: true, // disables implicit prepared statement usage
+		}
+		db, err = gorm.Open(postgres.New(postgresCfg), gormCfg)
 		if err != nil {
 			return err
 		}
