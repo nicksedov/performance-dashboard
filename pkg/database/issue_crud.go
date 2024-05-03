@@ -37,7 +37,7 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *
 		Description:    f.Description,
 		ActualStart:    actualStart,
 		ActualEnd:      actualEnd,
-		ActualSprintID: f.Sprint.ID,
+		LastSprintID:   f.Sprint.ID,
 		Subtask:        f.Issuetype.Subtask,
 		ParentID:       parentId,
 		CurrentState:   f.Status.StatusCategory.Key,
@@ -47,6 +47,9 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *
 	tx := db.Where(database.Issue{Key: iss.Key}).First(&existing)
 	if tx.Error == nil {
 		newIssue.ID = existing.ID
+		if newIssue.LastSprintID == 0 && existing.LastSprintID != 0 {
+			newIssue.LastSprintID = existing.LastSprintID
+		}
 		if !existing.Equals(&newIssue) {
 			db.Save(&newIssue)
 		} else {

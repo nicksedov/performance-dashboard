@@ -13,7 +13,7 @@ type Issue struct {
 	Description    string
 	ActualStart    time.Time
 	ActualEnd      time.Time
-	ActualSprintID int
+	LastSprintID   int
 	Subtask        bool `gorm:"default:false"`
 	ParentID       int
 	CurrentState   string
@@ -29,7 +29,7 @@ func (it *Issue) Equals(that *Issue) bool {
 		it.Description == that.Description &&
 		it.ActualStart.Equal(that.ActualStart) &&
 		it.ActualEnd.Equal(that.ActualEnd) &&
-		it.ActualSprintID == that.ActualSprintID &&
+		it.LastSprintID == that.LastSprintID &&
 		it.Subtask == that.Subtask &&
 		it.ParentID == that.ParentID &&
 		it.CurrentState == that.CurrentState
