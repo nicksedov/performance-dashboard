@@ -1,4 +1,4 @@
-package jira
+package model
 
 type Account struct {
 	AccountID    string     `json:"accountId"`

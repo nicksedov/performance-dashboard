@@ -1,13 +1,13 @@
-package jira
+package model
 
 type RoleActor struct {
-	ID          int    `json:"id"`
+	ID           int    `json:"id"`
 	DisplayName  string `json:"displayName"`
 	EmailAddress string `json:"emailAddress"`
-	Name        string `json:"name,omitempty"`
-	Type        string `json:"type"`
-	User        string `json:"user,omitempty"`
-	ActorUser   struct {
+	Name         string `json:"name,omitempty"`
+	Type         string `json:"type"`
+	User         string `json:"user,omitempty"`
+	ActorUser    struct {
 		AccountID string `json:"accountId"`
 	} `json:"actorUser,omitempty"`
 	ActorGroup struct {
@@ -18,10 +18,10 @@ type RoleActor struct {
 }
 
 type Role struct {
-	Actors []RoleActor `json:"actors"`
-	Description string `json:"description"`
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
+	Actors      []RoleActor `json:"actors"`
+	Description string      `json:"description"`
+	ID          int         `json:"id"`
+	Name        string      `json:"name"`
 	Scope       struct {
 		Project struct {
 			ID   string `json:"id"`

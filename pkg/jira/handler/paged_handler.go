@@ -22,14 +22,14 @@ func (h PagedHandler[T]) Handle(resp *http.Response, dto *[]T) {
 		h.OnError("Error reading response body", err)
 	}
 
-	data := &jira.Pagination{}
+	data := &model.Pagination{}
 	err = json.Unmarshal(body, data)
 	if err != nil {
 		h.OnError("Error parsing JSON", err)
 	}
 	if len(data.Values) > 0 {
 		*dto = make([]T, len(data.Values))
-		for i,value := range data.Values {
+		for i, value := range data.Values {
 			dtoItem := new(T)
 			jsonListItem, _ := json.Marshal(value)
 			json.Unmarshal(jsonListItem, dtoItem)

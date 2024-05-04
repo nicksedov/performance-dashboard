@@ -1,4 +1,4 @@
-package jira
+package model
 
 import "time"
 
@@ -14,4 +14,3 @@ type Sprint struct {
 	State         string    `json:"state"`
 	Goal          string    `json:"goal"`
 }
-

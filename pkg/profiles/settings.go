@@ -23,6 +23,12 @@ type Settings struct {
 		} `yaml:"auth"`
 	} `yaml:"jira"`
 
+	HttpClientConfig struct {
+		RequestTimeout   time.Duration `yaml:"requestTimeout"`
+		RequestRateLimit int `yaml:"requestRateLimit"`
+		RetryLimit       int `yaml:"retryLimit"`
+	} `yaml:"httpClient"`
+
 	DbConfig struct {
 		Host       string `yaml:"host"`
 		Port       uint   `yaml:"port"`

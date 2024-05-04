@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 	"performance-dashboard/pkg/database"
-	jira "performance-dashboard/pkg/jira/http"
-	model "performance-dashboard/pkg/jira/model"
+	"performance-dashboard/pkg/jira/http"
+	"performance-dashboard/pkg/jira/model"
 	"performance-dashboard/pkg/profiles"
-	"time"
 )
 
 func jiraCoreWorker() error {
@@ -15,15 +14,13 @@ func jiraCoreWorker() error {
 	config := profiles.GetSettings()
 	projectKey := config.JiraConfig.ProjectKey
 
-	// Get project info
-	getProjectApiPath := fmt.Sprintf("/rest/api/2/project/%s", projectKey)
-	project := jira.QueryOne("GET", getProjectApiPath, &model.Project{})
+	
+	project := getProject(projectKey)
 
 	// Get project roles
 	roles := project.Roles
 	log.Printf("Collecting information about actors in project '%s'\n", projectKey)
 	for _, getRoleApi := range roles {
-		time.Sleep(200 * time.Millisecond)
 		role := jira.QueryOne("GET", getRoleApi, &model.Role{})
 		actorsCount := len(role.Actors)
 		if actorsCount > 0 {
@@ -42,7 +39,7 @@ func jiraCoreWorker() error {
 		return nil
 	}
 	projectMeta := issueFields.Projects[0]
-	for _,storyMetadata := range projectMeta.Issuetypes {
+	for _, storyMetadata := range projectMeta.Issuetypes {
 		storyFields := storyMetadata.Fields
 		issueTypeName := storyMetadata.Name
 		untranslatedName := storyMetadata.UntranslatedName
@@ -50,7 +47,14 @@ func jiraCoreWorker() error {
 		for _, val := range storyFields {
 			database.SaveIssueMetadata(&val, issueTypeName, untranslatedName)
 		}
-	}  
+	}
 
 	return nil
+}
+
+// Get base project information by key
+func getProject(projectKey string) *model.Project {
+	log.Printf("Collecting information about project '%s'\n", projectKey)
+	getProjectApiPath := fmt.Sprintf("/rest/api/2/project/%s", projectKey)
+	return jira.QueryOne("GET", getProjectApiPath, &model.Project{})
 }

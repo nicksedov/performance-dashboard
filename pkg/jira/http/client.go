@@ -6,12 +6,20 @@ import (
 	"net/url"
 	"performance-dashboard/pkg/jira/handler"
 	"performance-dashboard/pkg/profiles"
+	"time"
 )
 
-var client *http.Client
+var (
+	client *http.Client
+	lastRequestTimestamp time.Time
+	requestRateLimit int = 8
+	retryLimit int = 3
+	interval time.Duration
+)
+
 
 func QueryOne[T any](apiMethod string, apiPath string, dto *T) *T {
-	resp := queryRaw(apiMethod, apiPath)
+	resp := httpQuery(apiMethod, apiPath)
 	if resp != nil {
 		respHandler := handler.SimpleHandler[T]{}
 		respHandler.Handle(resp, dto)
@@ -20,8 +28,9 @@ func QueryOne[T any](apiMethod string, apiPath string, dto *T) *T {
 }
 
 func QueryPaged[T any](apiMethod string, apiPath string, dto *[]T) *[]T {
-	resp := queryRaw(apiMethod, apiPath)
+	resp := httpQuery(apiMethod, apiPath)
 	if resp != nil {
+		defer resp.Body.Close()
 		respHandler := handler.PagedHandler[T]{}
 		respHandler.Handle(resp, dto)
 	}
@@ -31,6 +40,15 @@ func QueryPaged[T any](apiMethod string, apiPath string, dto *[]T) *[]T {
 func getClient() *http.Client {
 	if client == nil {
 		client = &http.Client{}
+		settings := profiles.GetSettings()
+		client.Timeout = settings.HttpClientConfig.RequestTimeout
+		if settings.HttpClientConfig.RequestRateLimit > 0 {
+			requestRateLimit = settings.HttpClientConfig.RequestRateLimit
+		}
+		if settings.HttpClientConfig.RetryLimit > 0 {
+			retryLimit = settings.HttpClientConfig.RetryLimit
+		}
+		interval = time.Second / time.Duration(requestRateLimit) 
 	}
 	return client
 }
@@ -51,10 +69,7 @@ func buildUrl(baseUrl, apiPath string) string {
 	}
 }
 
-func queryRaw(apiMethod string, apiPath string) *http.Response {
-
-	// Create HTTP client
-	c := getClient()
+func httpQuery(apiMethod string, apiPath string) *http.Response {
 
 	// Prepare request
 	settings := profiles.GetSettings()
@@ -74,13 +89,41 @@ func queryRaw(apiMethod string, apiPath string) *http.Response {
 	} else {
 		log.Printf("Warning: invalid authorization type %s", authSettings.Type)
 	}
-
+	
 	// Make request
-	resp, err := c.Do(req)
+	resp, err := doRequest(req)
 	if err != nil {
 		log.Printf("Error making request: %v", err)
 		return nil
 	}
-
 	return resp
+}
+
+func doRequest(req *http.Request) (*http.Response, error) {
+	return doRetryableRequest(req, 0)
+}
+
+func doRetryableRequest(req *http.Request, retryCount int) (*http.Response, error) {
+
+	c:= getClient()
+
+	// Adding pause to not exceed given RequestRateLimit or extended pause on retry attempt 
+	timePassed := time.Since(lastRequestTimestamp)
+	awaitDuration := interval * time.Duration(retryCount + 1) 
+	if awaitDuration > timePassed {
+		time.Sleep(awaitDuration - timePassed)
+		lastRequestTimestamp = time.Now()
+	}
+
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+    // Retry on "Too many requests" or "Service Unavailable"
+	if (resp.StatusCode == 429 || resp.StatusCode == 503) && retryCount < retryLimit {
+		log.Printf("Warning: HTTP request '%s %s' returned status '%s', retrying...", req.Method, req.RequestURI, resp.Status)
+		return doRetryableRequest(req, retryCount + 1)
+	}
+	
+	return resp, nil
 }

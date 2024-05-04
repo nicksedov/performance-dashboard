@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	database "performance-dashboard/pkg/database/model"
+	"performance-dashboard/pkg/database/dto"
 	"performance-dashboard/pkg/profiles"
 
 	"gorm.io/driver/postgres"
@@ -33,7 +33,7 @@ func InitializeDB() error {
 			gormCfg.NamingStrategy = searchPathNamingStrategy
 		}
 		postgresCfg := postgres.Config{
-			DSN: dsn,
+			DSN:                  dsn,
 			PreferSimpleProtocol: true, // disables implicit prepared statement usage
 		}
 		db, err = gorm.Open(postgres.New(postgresCfg), gormCfg)
@@ -41,19 +41,19 @@ func InitializeDB() error {
 			return err
 		}
 		err = db.AutoMigrate(
-			&database.ApplicationLog{},
-			&database.IssueMetadata{},
-			&database.Sprint{},
-			&database.SprintPoll{},
-			&database.Account{},
-			&database.Poll{},
-			&database.Issue{},
-			&database.IssueState{},
-			&database.IssueSprint{},
-			&database.IssueAssigneeTransitions{},
+			&dto.ApplicationLog{},
+			&dto.IssueMetadata{},
+			&dto.Sprint{},
+			&dto.SprintPoll{},
+			&dto.Account{},
+			&dto.Poll{},
+			&dto.Issue{},
+			&dto.IssueState{},
+			&dto.IssueSprint{},
+			&dto.IssueAssigneeTransitions{},
 		)
 		if err == nil {
-			tx := db.Save(&database.ApplicationLog{ Timestamp: time.Now(), Log: "Database connection created" })
+			tx := db.Save(&dto.ApplicationLog{Timestamp: time.Now(), Log: "Database connection created"})
 			err = tx.Error
 		}
 	}

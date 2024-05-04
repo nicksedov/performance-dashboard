@@ -2,23 +2,24 @@ package database
 
 import (
 	"log"
-	"time"
+	"performance-dashboard/pkg/database/dto"
+	"performance-dashboard/pkg/jira/model"
 	"slices"
-	database "performance-dashboard/pkg/database/model"
-	jira "performance-dashboard/pkg/jira/model"
+	"time"
+
 	"github.com/patrickmn/go-cache"
 	"gorm.io/gorm"
 )
 
-type WhereClause func() database.Account
+type WhereClause func() dto.Account
 
 const ISO8601_LAYOUT string = "2006-01-02T15:04:05Z0700"
 
 var accountIdCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 var accountNameCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 
-func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *database.IssueState {
-	
+func SaveIssue(pollId int, iss *model.Issue, f *model.IssueFields, parentId int) *dto.IssueState {
+
 	created, _ := time.Parse(ISO8601_LAYOUT, f.Created)
 	actualStart, _ := time.Parse(ISO8601_LAYOUT, f.ActualStart)
 	actualEnd, _ := time.Parse(ISO8601_LAYOUT, f.ActualEnd)
@@ -27,24 +28,24 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *
 	reporter := getAccountMetadata(&f.Reporter)
 	assignee := getAccountMetadata(&f.Assignee)
 
-	newIssue := database.Issue{
-		Key:            iss.Key,
-		Type:           f.Issuetype.ID,
-		Summary:        f.Summary,
-		CreatorID:      creator.ID,
-		Created:        created,
-		ReporterID:     reporter.ID,
-		Description:    f.Description,
-		ActualStart:    actualStart,
-		ActualEnd:      actualEnd,
-		LastSprintID:   f.Sprint.ID,
-		Subtask:        f.Issuetype.Subtask,
-		ParentID:       parentId,
-		CurrentState:   f.Status.StatusCategory.Key,
+	newIssue := dto.Issue{
+		Key:          iss.Key,
+		Type:         f.Issuetype.ID,
+		Summary:      f.Summary,
+		CreatorID:    creator.ID,
+		Created:      created,
+		ReporterID:   reporter.ID,
+		Description:  f.Description,
+		ActualStart:  actualStart,
+		ActualEnd:    actualEnd,
+		LastSprintID: f.Sprint.ID,
+		Subtask:      f.Issuetype.Subtask,
+		ParentID:     parentId,
+		CurrentState: f.Status.StatusCategory.Key,
 	}
 
-	existing := database.Issue{}
-	tx := db.Where(database.Issue{Key: iss.Key}).First(&existing)
+	existing := dto.Issue{}
+	tx := db.Where(dto.Issue{Key: iss.Key}).First(&existing)
 	if tx.Error == nil {
 		newIssue.ID = existing.ID
 		if newIssue.LastSprintID == 0 && existing.LastSprintID != 0 {
@@ -65,21 +66,21 @@ func SaveIssue(pollId int, iss *jira.Issue, f *jira.IssueFields, parentId int) *
 	return issueStateRecord
 }
 
-func getAccountMetadata(acc *jira.Account) *database.Account {
-	var result *database.Account = &database.Account{}
+func getAccountMetadata(acc *model.Account) *dto.Account {
+	var result *dto.Account = &dto.Account{}
 	if acc.AccountID != "" {
-		result = getCached(accountIdCache, acc.AccountID, func() database.Account { return database.Account{AccountID: acc.AccountID} })
+		result = getCached(accountIdCache, acc.AccountID, func() dto.Account { return dto.Account{AccountID: acc.AccountID} })
 	} else if acc.DisplayName != "" {
-		result = getCached(accountNameCache, acc.DisplayName, func() database.Account { return database.Account{DisplayName: acc.DisplayName} })
+		result = getCached(accountNameCache, acc.DisplayName, func() dto.Account { return dto.Account{DisplayName: acc.DisplayName} })
 	}
 	return result
 }
 
-func getCached(accountCache *cache.Cache, key string, whereClause WhereClause) *database.Account {
-	var result database.Account
+func getCached(accountCache *cache.Cache, key string, whereClause WhereClause) *dto.Account {
+	var result dto.Account
 	resultObj, found := accountCache.Get(key)
 	if found {
-		result = resultObj.(database.Account)
+		result = resultObj.(dto.Account)
 	} else {
 		r := db.Where(whereClause()).First(&result)
 		if r.Error == nil {
@@ -89,8 +90,8 @@ func getCached(accountCache *cache.Cache, key string, whereClause WhereClause) *
 	return &result
 }
 
-func saveIssueState(pollId int, issueId int, assigneeId int, f *jira.IssueFields) *database.IssueState {
-	issueStateRecord := database.IssueState{
+func saveIssueState(pollId int, issueId int, assigneeId int, f *model.IssueFields) *dto.IssueState {
+	issueStateRecord := dto.IssueState{
 		PollID:         pollId,
 		IssueID:        issueId,
 		AssigneeID:     assigneeId,
@@ -102,10 +103,10 @@ func saveIssueState(pollId int, issueId int, assigneeId int, f *jira.IssueFields
 	return &issueStateRecord
 }
 
-func saveIssueSprints(issueId int, f *jira.IssueFields) {
-	existingIssueSprints,_ := Read(
-		func(items *[]database.IssueSprint, db *gorm.DB) {
-			db.Where(database.IssueSprint{IssueID: issueId}).Find(items)
+func saveIssueSprints(issueId int, f *model.IssueFields) {
+	existingIssueSprints, _ := Read(
+		func(items *[]dto.IssueSprint, db *gorm.DB) {
+			db.Where(dto.IssueSprint{IssueID: issueId}).Find(items)
 		})
 	existingSprintIds := make([]int, 0, len(*existingIssueSprints))
 	for _, existingSprint := range *existingIssueSprints {
@@ -115,25 +116,25 @@ func saveIssueSprints(issueId int, f *jira.IssueFields) {
 	for _, sprint := range f.ClosedSprints {
 		spID := sprint.ID
 		if spID != 0 && !slices.Contains(existingSprintIds, spID) {
-			db.Save(&database.IssueSprint{IssueID: issueId, SprintID: spID })
+			db.Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
 		}
 	}
 	// Current sprint
 	spID := f.Sprint.ID
 	if spID != 0 && !slices.Contains(existingSprintIds, spID) {
-		db.Save(&database.IssueSprint{IssueID: issueId, SprintID: spID })
+		db.Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
 	}
 }
 
 func saveOrUpdateAssigneeTransitions(issueId int, assigneeId int) {
-	
+
 	if assigneeId == 0 {
-		return; // Assignee absence or removal is not a transition 
+		return // Assignee absence or removal is not a transition
 	}
 
-	existingTransitions,_ := Read(
-		func(items *[]database.IssueAssigneeTransitions, db *gorm.DB) {
-			db.Where(database.IssueAssigneeTransitions{IssueID: issueId}).Find(items)
+	existingTransitions, _ := Read(
+		func(items *[]dto.IssueAssigneeTransitions, db *gorm.DB) {
+			db.Where(dto.IssueAssigneeTransitions{IssueID: issueId}).Find(items)
 		})
 	transitionsExist := len(*existingTransitions) > 0
 	if transitionsExist {
@@ -144,7 +145,7 @@ func saveOrUpdateAssigneeTransitions(issueId int, assigneeId int) {
 			db.Save(&update)
 		}
 	} else {
-		newTransition := database.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
+		newTransition := dto.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
 		db.Save(&newTransition)
 	}
 }

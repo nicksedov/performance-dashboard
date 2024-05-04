@@ -1,4 +1,4 @@
-package database
+package dto
 
 type IssueMetadata struct {
 	ID               int        `gorm:"unique;primaryKey"`

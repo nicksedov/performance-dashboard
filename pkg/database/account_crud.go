@@ -2,12 +2,12 @@ package database
 
 import (
 	"log"
-	database "performance-dashboard/pkg/database/model"
-	jira "performance-dashboard/pkg/jira/model"
+	"performance-dashboard/pkg/database/dto"
+	"performance-dashboard/pkg/jira/model"
 )
 
-func SaveAccount(actor *jira.RoleActor, role string) {
-	newAccount := database.Account{
+func SaveAccount(actor *model.RoleActor, role string) {
+	newAccount := dto.Account{
 		ID:           actor.ID,
 		AccountID:    actor.ActorUser.AccountID,
 		AccountType:  actor.Type,
@@ -15,8 +15,8 @@ func SaveAccount(actor *jira.RoleActor, role string) {
 		DisplayName:  actor.DisplayName,
 		EmailAddress: actor.EmailAddress,
 	}
-	existing := database.Account{}
-	tx := db.Where(database.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
+	existing := dto.Account{}
+	tx := db.Where(dto.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
 	if tx.Error == nil {
 		newAccount.ID = existing.ID
 		if existing != newAccount {

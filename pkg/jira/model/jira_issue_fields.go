@@ -1,4 +1,4 @@
-package jira
+package model
 
 type IssueFieldMeta struct {
 	AutoCompleteURL string   `json:"autoCompleteUrl"`
@@ -38,12 +38,12 @@ type IssueTypeMetadata struct {
 type IssueFieldsMeta struct {
 	Expand   string `json:"expand"`
 	Projects []struct {
-		AvatarUrls AvatarUrls `json:"avatarUrls"`
-		Expand     string     `json:"expand"`
-		ID         string     `json:"id"`
+		AvatarUrls AvatarUrls          `json:"avatarUrls"`
+		Expand     string              `json:"expand"`
+		ID         string              `json:"id"`
 		Issuetypes []IssueTypeMetadata `json:"issuetypes"`
-		Key  string `json:"key"`
-		Name string `json:"name"`
-		Self string `json:"self"`
+		Key        string              `json:"key"`
+		Name       string              `json:"name"`
+		Self       string              `json:"self"`
 	} `json:"projects"`
 }

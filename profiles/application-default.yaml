@@ -19,6 +19,12 @@ jira:
     clientId: jira-api-access@yourdomain.com
     apiToken: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+# HTTP client configuration
+httpClient:
+  requestTimeout: 30s
+  requestRateLimit: 10
+  retryLimit: 2
+
 # PostgreSQL database connection requisites
 database:
   host: localhost

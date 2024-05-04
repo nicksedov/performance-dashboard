@@ -1,4 +1,4 @@
-package jira
+package model
 
 type IssueType struct {
 	AvatarID       int    `json:"avatarId"`
@@ -13,14 +13,14 @@ type IssueType struct {
 }
 
 type IssueSprint struct {
-	BoardID      int       `json:"boardId"`
-	CompleteDate string    `json:"completeDate"`
-	EndDate      string    `json:"endDate"`
-	Goal         string    `json:"goal"`
-	ID           int       `json:"id"`
-	Name         string    `json:"name"`
-	StartDate    string    `json:"startDate"`
-	State        string    `json:"state"`
+	BoardID      int    `json:"boardId"`
+	CompleteDate string `json:"completeDate"`
+	EndDate      string `json:"endDate"`
+	Goal         string `json:"goal"`
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	StartDate    string `json:"startDate"`
+	State        string `json:"state"`
 }
 
 type Priority struct {
@@ -57,14 +57,14 @@ type Attachment struct {
 }
 
 type Comment struct {
-	Author       Account   `json:"author"`
-	Body         string    `json:"body"`
-	Created      string    `json:"created"`
-	ID           string    `json:"id"`
-	JsdPublic    bool      `json:"jsdPublic"`
-	Self         string    `json:"self"`
-	UpdateAuthor Account   `json:"updateAuthor"`
-	Updated      string    `json:"updated"`
+	Author       Account `json:"author"`
+	Body         string  `json:"body"`
+	Created      string  `json:"created"`
+	ID           string  `json:"id"`
+	JsdPublic    bool    `json:"jsdPublic"`
+	Self         string  `json:"self"`
+	UpdateAuthor Account `json:"updateAuthor"`
+	Updated      string  `json:"updated"`
 }
 
 type Votes struct {
@@ -169,12 +169,12 @@ type IssueFields struct {
 	Workratio int           `json:"workratio"`
 
 	// Fields with custom (dynamic) names
-	StoryPoints    float64   `json:"-"`
-	StartDate      string    `json:"-"`
-	ActualStart    string    `json:"-"`
-	ActualEnd      string    `json:"-"`
-	Sprints []IssueSprint    `json:"-"`
-	BusinessReqUrl string    `json:"-"`
+	StoryPoints    float64       `json:"-"`
+	StartDate      string        `json:"-"`
+	ActualStart    string        `json:"-"`
+	ActualEnd      string        `json:"-"`
+	Sprints        []IssueSprint `json:"-"`
+	BusinessReqUrl string        `json:"-"`
 }
 
 type Issue struct {

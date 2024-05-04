@@ -1,4 +1,4 @@
-package database
+package dto
 
 type Account struct {
 	ID           int     `gorm:"unique;primaryKey"`
