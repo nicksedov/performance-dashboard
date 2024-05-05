@@ -6,7 +6,7 @@ import (
 	"log"
 	"performance-dashboard/pkg/database"
 	"performance-dashboard/pkg/database/dto"
-	jira "performance-dashboard/pkg/jira/http"
+	"performance-dashboard/pkg/httpclient"
 	"performance-dashboard/pkg/jira/model"
 	"performance-dashboard/pkg/profiles"
 
@@ -20,14 +20,14 @@ const (
 	sprintCustomType     string = "com.pyxis.greenhopper.jira:gh-sprint"
 )
 
-func jiraAgileWorker() error {
+func jiraSprintWorker() error {
 
 	config := profiles.GetSettings()
 	boardID := config.JiraConfig.BoardID
 
 	// Get and save list of strints
 	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint", boardID)
-	sprints := jira.QueryPaged("GET", getSprintApiPath, &[]model.Sprint{})
+	sprints := httpclient.QueryPaged("GET", getSprintApiPath, &[]model.Sprint{})
 	for _, sprint := range *sprints {
 		database.SaveSprint(&sprint)
 	}
@@ -45,9 +45,9 @@ func jiraAgileWorker() error {
 	return nil
 }
 
-// Returns sprints intended for polling as a map 
-// Map keys are sprint IDs, and value is set to "false" in case when a regular poll required 
-// or "true" in case when a final poll required 
+// Returns sprints intended for polling as a map
+// Map keys are sprint IDs, and value is set to "false" in case when a regular poll required
+// or "true" in case when a final poll required
 func collectSprintsForPolling(sprints *[]model.Sprint) *map[int]bool {
 	var sprintIds map[int]bool = make(map[int]bool, len(*sprints))
 	for _, sprint := range *sprints {
@@ -67,13 +67,13 @@ func pollCurrentIssueStates(boardID string, sprintID int, isCompletionPoll bool)
 	poll, _ := database.NewPoll(sprintID)
 	log.Printf("Collecting issue statuses for sprint with ID '%d'\n", sprintID)
 	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardID, sprintID)
-	issues := jira.QueryOne("GET", getIssuesApiPath, &model.Issues{})
+	issues := httpclient.QueryOne("GET", getIssuesApiPath, &model.Issues{})
 	customFieldsByIssueType := getCustomFields()
 
 	for _, issue := range issues.Issues {
 		issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
 		for _, subtask := range subtasks {
-			subtaskDetails := jira.QueryOne("GET", subtask.Self, &model.Issue{})
+			subtaskDetails := httpclient.QueryOne("GET", subtask.Self, &model.Issue{})
 			saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
 	}

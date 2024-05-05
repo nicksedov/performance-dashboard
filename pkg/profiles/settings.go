@@ -25,8 +25,8 @@ type Settings struct {
 
 	HttpClientConfig struct {
 		RequestTimeout   time.Duration `yaml:"requestTimeout"`
-		RequestRateLimit int `yaml:"requestRateLimit"`
-		RetryLimit       int `yaml:"retryLimit"`
+		RequestRateLimit int           `yaml:"requestRateLimit"`
+		RetryLimit       int           `yaml:"retryLimit"`
 	} `yaml:"httpClient"`
 
 	DbConfig struct {
@@ -40,19 +40,20 @@ type Settings struct {
 	} `yaml:"database"`
 
 	Logger struct {
-		File lumberjack.Logger `yaml:"file"`
-		Console  struct {
+		File    lumberjack.Logger `yaml:"file"`
+		Console struct {
 			Mode string `yaml:"mode"`
 		}
 	} `yaml:"logger"`
 
 	Schedule struct {
-		CoreTask struct {
-			ExecuteOnStartup bool `yaml:"executeOnStartup"`
-			Period time.Duration  `yaml:"period"`
-		} `yaml:"coreTask"`
-		SecondaryTasks struct {
-			DelayedStart time.Duration `yaml:"delayedStart"`
-		} `yaml:"secondaryTasks"`
+		Task []TaskConfig `yaml:"task"`
 	} `yaml:"schedule"`
+}
+
+type TaskConfig struct {
+	ID               string        `yaml:"id"`
+	Period           time.Duration `yaml:"period"`
+	ExecuteOnStartup bool          `yaml:"executeOnStartup"`
+	DelayedStart     time.Duration `yaml:"delayedStart"`
 }

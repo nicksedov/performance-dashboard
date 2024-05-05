@@ -1,4 +1,4 @@
-package jira
+package httpclient
 
 import (
 	"log"

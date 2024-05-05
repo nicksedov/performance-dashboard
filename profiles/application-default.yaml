@@ -47,9 +47,11 @@ logger:
 
 # Periodic tasks configuration
 schedule:
-  # Core task (reading project and issues metadata)    
-  coreTask:
-    executeOnStartup: true
-    period: 10m0s
-  secondaryTasks:
-    delayedStart: 5s
+  task:
+    - id: jira_project
+      executeOnStartup: true
+      period: 1h
+    - id: jira_sprint
+      executeOnStartup: true
+      delayedStart: 40s
+      period: 15m
