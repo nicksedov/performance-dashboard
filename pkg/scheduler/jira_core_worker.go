@@ -13,8 +13,6 @@ func jiraCoreWorker() error {
 
 	config := profiles.GetSettings()
 	projectKey := config.JiraConfig.ProjectKey
-
-	
 	project := getProject(projectKey)
 
 	// Get project roles

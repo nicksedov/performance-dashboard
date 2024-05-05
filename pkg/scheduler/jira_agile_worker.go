@@ -6,7 +6,7 @@ import (
 	"log"
 	"performance-dashboard/pkg/database"
 	"performance-dashboard/pkg/database/dto"
-	"performance-dashboard/pkg/jira/http"
+	jira "performance-dashboard/pkg/jira/http"
 	"performance-dashboard/pkg/jira/model"
 	"performance-dashboard/pkg/profiles"
 
@@ -23,12 +23,32 @@ const (
 func jiraAgileWorker() error {
 
 	config := profiles.GetSettings()
-	boardId := config.JiraConfig.BoardID
+	boardID := config.JiraConfig.BoardID
 
-	// Get active sprint
-	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint", boardId)
+	// Get and save list of strints
+	getSprintApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint", boardID)
 	sprints := jira.QueryPaged("GET", getSprintApiPath, &[]model.Sprint{})
+	for _, sprint := range *sprints {
+		database.SaveSprint(&sprint)
+	}
 
+	sprintIds := collectSprintsForPolling(sprints)
+	if len(*sprintIds) == 0 {
+		log.Println("No sprints selected for processing, bypassing issue states poll")
+		return nil
+	}
+
+	// Polling issue states for given sprints
+	for sprintID, isCompletionPoll := range *sprintIds {
+		pollCurrentIssueStates(boardID, sprintID, isCompletionPoll)
+	}
+	return nil
+}
+
+// Returns sprints intended for polling as a map 
+// Map keys are sprint IDs, and value is set to "false" in case when a regular poll required 
+// or "true" in case when a final poll required 
+func collectSprintsForPolling(sprints *[]model.Sprint) *map[int]bool {
 	var sprintIds map[int]bool = make(map[int]bool, len(*sprints))
 	for _, sprint := range *sprints {
 		if sprint.State == "active" {
@@ -39,32 +59,26 @@ func jiraAgileWorker() error {
 				sprintIds[sprint.ID] = true
 			}
 		}
-		database.SaveSprint(&sprint)
 	}
-	if len(sprintIds) == 0 {
-		log.Println("No sprints selected for processing, bypassing issue states poll")
-		return nil
-	}
+	return &sprintIds
+}
 
-	// Polling issue states for
-	for sprintID, isCompletionPoll := range sprintIds {
-		poll, _ := database.NewPoll(sprintID)
-		log.Printf("Collecting issue statuses for sprint with ID '%d'\n", sprintID)
-		getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardId, sprintID)
-		issues := jira.QueryOne("GET", getIssuesApiPath, &model.Issues{})
-		customFieldsByIssueType := getCustomFields()
+func pollCurrentIssueStates(boardID string, sprintID int, isCompletionPoll bool) {
+	poll, _ := database.NewPoll(sprintID)
+	log.Printf("Collecting issue statuses for sprint with ID '%d'\n", sprintID)
+	getIssuesApiPath := fmt.Sprintf("/rest/agile/1.0/board/%s/sprint/%d/issue?maxResults=300", boardID, sprintID)
+	issues := jira.QueryOne("GET", getIssuesApiPath, &model.Issues{})
+	customFieldsByIssueType := getCustomFields()
 
-		for _, issue := range issues.Issues {
-			issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
-			for _, subtask := range subtasks {
-				subtaskDetails := jira.QueryOne("GET", subtask.Self, &model.Issue{})
-				saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
-			}
+	for _, issue := range issues.Issues {
+		issueId, subtasks := saveIssueState(poll, &issue, customFieldsByIssueType, 0)
+		for _, subtask := range subtasks {
+			subtaskDetails := jira.QueryOne("GET", subtask.Self, &model.Issue{})
+			saveIssueState(poll, subtaskDetails, customFieldsByIssueType, issueId)
 		}
-		database.CommitPoll(poll)
-		database.UpdateSprintPoll(poll.ActiveSprint, poll.ID, isCompletionPoll)
 	}
-	return nil
+	database.CommitPoll(poll)
+	database.SaveSprintPoll(poll.ActiveSprint, poll.ID, isCompletionPoll)
 }
 
 func getCustomFields() *map[string][]dto.IssueMetadata {

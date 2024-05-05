@@ -30,18 +30,3 @@ func SaveSprint(s *model.Sprint) {
 		db.Save(&sprint)
 	}
 }
-
-func CompletionPollRequired(sprintID int) bool {
-	sprintPoll := dto.SprintPoll{CompletionPoll: false}
-	db.Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll)
-	return !sprintPoll.CompletionPoll
-}
-
-func UpdateSprintPoll(sprintID int, pollId int, isCompletionPoll bool) {
-	sprintPoll := dto.SprintPoll{
-		ID:             sprintID,
-		LastPollID:     pollId,
-		CompletionPoll: isCompletionPoll,
-	}
-	db.Save(&sprintPoll)
-}
