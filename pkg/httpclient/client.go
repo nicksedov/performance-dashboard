@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"performance-dashboard/pkg/jira/handler"
 	"performance-dashboard/pkg/profiles"
+	"strconv"
 	"time"
 )
 
@@ -114,7 +115,6 @@ func doRetryableRequest(req *http.Request, retryCount int) (*http.Response, erro
 		time.Sleep(awaitDuration - timePassed)
 		lastRequestTimestamp = time.Now()
 	}
-
 	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
@@ -122,8 +122,28 @@ func doRetryableRequest(req *http.Request, retryCount int) (*http.Response, erro
     // Retry on "Too many requests" or "Service Unavailable"
 	if (resp.StatusCode == 429 || resp.StatusCode == 503) && retryCount < retryLimit {
 		log.Printf("Warning: HTTP request '%s %s' returned status '%s', retrying...", req.Method, req.RequestURI, resp.Status)
+		if len(resp.Header["Retry-After"]) > 0 {
+			onRetryAfter(resp.Header["Retry-After"][0])
+		}
 		return doRetryableRequest(req, retryCount + 1)
 	}
 	
 	return resp, nil
+}
+
+func onRetryAfter(retryAfter string) {
+	var sleepDuration time.Duration
+	sec, err := strconv. Atoi(retryAfter) 
+	if err == nil {
+		sleepDuration = time.Duration(sec) * time.Second
+	} else {
+		timestamp, err := time.Parse(time.RFC1123, retryAfter)
+		if err == nil {
+			sleepDuration = time.Until(timestamp)
+		}
+	}
+	if sleepDuration > 0 {
+		log.Printf("Setting retry interval to '%v' according to 'Retry-After' header value", sleepDuration)
+		time.Sleep(sleepDuration)
+	}
 }
