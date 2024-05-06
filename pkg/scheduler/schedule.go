@@ -48,7 +48,6 @@ func Schedule() {
 				if cfg.DelayedStart > 0 {
 					time.Sleep(cfg.DelayedStart)
 				}
-				log.Printf("Task %s runs right now, %v\n", cfg.ID, time.Now())
 				worker()
 			} (taskCfg)
 		}
@@ -56,6 +55,6 @@ func Schedule() {
 	
 	log.Println("Scheduler activated. The wollowing tasks are scheduled to run:")
 	for id, task := range scheduler.Tasks() {
-		log.Printf("  - %s (runs every %v, starting at %v)\n", id, task.Interval, task.StartAfter)
+		log.Printf("  - %s (runs every %v, starting at %s)\n", id, task.Interval, task.StartAfter.Format(time.RFC1123))
 	}
 }

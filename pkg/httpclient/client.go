@@ -121,7 +121,7 @@ func doRetryableRequest(req *http.Request, retryCount int) (*http.Response, erro
 	}
     // Retry on "Too many requests" or "Service Unavailable"
 	if (resp.StatusCode == 429 || resp.StatusCode == 503) && retryCount < retryLimit {
-		log.Printf("Warning: HTTP request '%s %s' returned status '%s', retrying...", req.Method, req.RequestURI, resp.Status)
+		log.Printf("Warning: HTTP request '%s %s' returned status '%s', retrying...", req.Method, req.URL.EscapedPath(), resp.Status)
 		if len(resp.Header["Retry-After"]) > 0 {
 			onRetryAfter(resp.Header["Retry-After"][0])
 		}
