@@ -13,7 +13,6 @@ type Sprint struct {
 	StartDate     time.Time
 	EndDate       time.Time
 	State         string
-	//LastPollID    int        `gorm:"default:0"`
 }
 
 func (it *Sprint) Equals(that *Sprint) bool {
@@ -25,11 +24,11 @@ func (it *Sprint) Equals(that *Sprint) bool {
 		it.StartDate.Equal(that.StartDate) &&
 		it.EndDate.Equal(that.EndDate) &&
 		it.State == that.State
-		// must not compare by LastPollID 
 }
 
 type SprintPoll struct {
 	ID              int        `gorm:"unique;primaryKey"`
+	FirstPollID     int
 	LastPollID      int
 	CompletionPoll  bool       `gorm:"default:false"`
 }
