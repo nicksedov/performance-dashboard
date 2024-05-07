@@ -41,6 +41,7 @@ func SaveIssue(pollId int, iss *model.Issue, f *model.IssueFields, parentId int)
 		LastSprintID: f.Sprint.ID,
 		Subtask:      f.Issuetype.Subtask,
 		ParentID:     parentId,
+		EpicID:       f.Epic.ID,
 		CurrentState: f.Status.StatusCategory.Key,
 	}
 

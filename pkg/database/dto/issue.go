@@ -16,6 +16,7 @@ type Issue struct {
 	LastSprintID   int
 	Subtask        bool `gorm:"default:false"`
 	ParentID       int
+	EpicID         int
 	CurrentState   string
 }
 
@@ -32,6 +33,7 @@ func (it *Issue) Equals(that *Issue) bool {
 		it.LastSprintID == that.LastSprintID &&
 		it.Subtask == that.Subtask &&
 		it.ParentID == that.ParentID &&
+		it.EpicID == that.EpicID &&
 		it.CurrentState == that.CurrentState
 }
 

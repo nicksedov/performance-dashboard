@@ -110,7 +110,7 @@ type IssueFields struct {
 	Description      string        `json:"description"`
 	Duedate          interface{}   `json:"duedate"`
 	Environment      interface{}   `json:"environment"`
-	Epic             interface{}   `json:"epic"`
+	Epic             Epic          `json:"epic"`
 	FixVersions      []interface{} `json:"fixVersions"`
 	Flagged          bool          `json:"flagged"`
 	Issuelinks       []interface{} `json:"issuelinks"`
@@ -175,6 +175,17 @@ type IssueFields struct {
 	ActualEnd      string        `json:"-"`
 	Sprints        []IssueSprint `json:"-"`
 	BusinessReqUrl string        `json:"-"`
+}
+type Epic struct {
+	ID      int    `json:"id"`
+	Key     string `json:"key"`
+	Self    string `json:"self"`
+	Name    string `json:"name"`
+	Summary string `json:"summary"`
+	Color   struct {
+		Key string `json:"key"`
+	} `json:"color"`
+	Done bool `json:"done"`
 }
 
 type Issue struct {
