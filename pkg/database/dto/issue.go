@@ -3,9 +3,9 @@ package dto
 import "time"
 
 type Issue struct {
-	ID             int `gorm:"unique;primaryKey"`
-	Key            string
-	Type           string
+	ID             int     `gorm:"unique;primaryKey"`
+	Key            string  `gorm:"not null"`
+	Type           string  `gorm:"not null"`
 	Summary        string
 	CreatorID      int
 	Created        time.Time
