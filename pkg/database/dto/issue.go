@@ -4,8 +4,8 @@ import "time"
 
 type Issue struct {
 	ID             int     `gorm:"unique;primaryKey"`
-	Key            string  `gorm:"not null"`
-	Type           string  `gorm:"not null"`
+	Key            string  `gorm:"not null;default:null"`
+	Type           string  `gorm:"not null;default:null"`
 	Summary        string
 	CreatorID      int
 	Created        time.Time
