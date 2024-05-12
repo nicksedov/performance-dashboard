@@ -13,8 +13,10 @@ var scheduler *tasks.Scheduler
 
 func initScheduler() *tasks.Scheduler {
 	if scheduler == nil {
+		log.Println("A new scheduler for periodic tasks initialized...")
 		scheduler = tasks.New()
 	} else {
+		log.Println("Scheduler for periodic tasks is stopping...")
 		scheduler.Stop()
 	}
 	return scheduler
@@ -49,7 +51,7 @@ func Schedule() {
 					time.Sleep(cfg.DelayedStart)
 				}
 				worker()
-				log.Printf("Initial execution complete for task '%s'", cfg.ID)
+				log.Printf("Initial execution complete for task '%s'\n", cfg.ID)
 			} (taskCfg)
 		}
 	}
