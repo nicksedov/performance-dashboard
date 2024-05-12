@@ -49,6 +49,7 @@ func Schedule() {
 					time.Sleep(cfg.DelayedStart)
 				}
 				worker()
+				log.Printf("Initial execution complete for task '%s'", cfg.ID)
 			} (taskCfg)
 		}
 	}
