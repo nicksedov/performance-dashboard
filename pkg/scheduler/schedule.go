@@ -37,21 +37,26 @@ func Schedule() {
 		}
 		task := tasks.Task{
 			TaskFunc:          worker,
+			ErrFunc:           func(err error) { onTaskError(taskCfg.ID, err) },
 			Interval:          taskCfg.Period,
 			StartAfter:        time.Now().Add(taskCfg.DelayedStart),
-			RunSingleInstance: true,
+			//RunSingleInstance: true,
 		}
 		// Schedule future execution
-		scheduler.AddWithID(taskCfg.ID, &task)
+		err := scheduler.AddWithID(taskCfg.ID, &task)
+		if err != nil {
+			log.Panicf("Error scheduling periodic task '%s'\n", taskCfg.ID)
+		}
 
 		// Initial worker execution
 		if taskCfg.ExecuteOnStartup {
-			go func(cfg profiles.TaskConfig) {
-				if cfg.DelayedStart > 0 {
-					time.Sleep(cfg.DelayedStart)
+			log.Printf("Task '%s' is scheduled to execute on startup\n", taskCfg.ID)
+			go func(currentTaskCfg profiles.TaskConfig) {
+				if currentTaskCfg.DelayedStart > 0 {
+					time.Sleep(currentTaskCfg.DelayedStart)
 				}
 				worker()
-				log.Printf("Initial execution complete for task '%s'\n", cfg.ID)
+				log.Printf("Initial execution complete for task '%s'\n", currentTaskCfg.ID)
 			} (taskCfg)
 		}
 	}
@@ -60,4 +65,8 @@ func Schedule() {
 	for id, task := range scheduler.Tasks() {
 		log.Printf("  - %s (runs every %v, starting at %s)\n", id, task.Interval, task.StartAfter.Format(time.RFC1123))
 	}
+}
+
+func onTaskError(taskId string, err error) {
+	log.Printf("Error running task '%s', %s", taskId, err.Error())
 }
