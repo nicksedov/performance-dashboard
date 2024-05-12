@@ -18,7 +18,8 @@ var db *gorm.DB
 func InitializeDB() error {
 	var err error
 	if db == nil {
-		dbConfig := profiles.GetSettings().DbConfig
+		dbConfigs := profiles.GetSettings().DbConfig
+		dbConfig := dbConfigs.DbNode[0]
 		dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
 		dsn := fmt.Sprintf(dsnFormat,
 			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)

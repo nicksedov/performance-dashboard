@@ -20,6 +20,11 @@ func SaveSprintPoll(sprintID int, pollId int, isCompletionPoll bool) {
 
 // Check that a final poll was made for a given sprint after its completion  
 func CompletionPollRequired(sprintID int) bool {
-	sprintPoll := dto.SprintPoll{CompletionPoll: false}
-	return !sprintPoll.CompletionPoll
+	sprintPoll := dto.SprintPoll{}
+	tx := db.Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll)
+	if tx.Error == nil {
+		return !sprintPoll.CompletionPoll
+	} else {
+		return false
+	}
 }

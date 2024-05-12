@@ -27,12 +27,13 @@ httpClient:
 
 # PostgreSQL database connection requisites
 database:
-  host: localhost
-  port: 5432
-  db_name: performance-dashboard
-  user: app-user
-  password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  ssl_mode: disable
+  node:
+    - host: localhost
+      port: 5432
+      db_name: performance-dashboard
+      user: app-user
+      password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      ssl_mode: disable
 
 # Logging configuration
 logger:

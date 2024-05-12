@@ -30,13 +30,7 @@ type Settings struct {
 	} `yaml:"httpClient"`
 
 	DbConfig struct {
-		Host       string `yaml:"host"`
-		Port       uint   `yaml:"port"`
-		DbName     string `yaml:"db_name"`
-		SearchPath string `yaml:"search_path"`
-		User       string `yaml:"user"`
-		Password   string `yaml:"password"`
-		SSLMode    string `yaml:"ssl_mode"`
+		DbNode  []Database `yaml:"node"`
 	} `yaml:"database"`
 
 	Logger struct {
@@ -49,6 +43,16 @@ type Settings struct {
 	Schedule struct {
 		Task []TaskConfig `yaml:"task"`
 	} `yaml:"schedule"`
+}
+
+type Database struct {
+	Host       string `yaml:"host"`
+	Port       uint   `yaml:"port"`
+	DbName     string `yaml:"db_name"`
+	SearchPath string `yaml:"search_path"`
+	User       string `yaml:"user"`
+	Password   string `yaml:"password"`
+	SSLMode    string `yaml:"ssl_mode"`
 }
 
 type TaskConfig struct {
