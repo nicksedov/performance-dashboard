@@ -131,6 +131,8 @@ func doRetryableRequest(req *http.Request, retryCount int) (*http.Response, erro
 	return resp, nil
 }
 
+const MAX_RETRY_DURATION = time.Duration(10)*time.Second
+
 func onRetryAfter(retryAfter string) {
 	var sleepDuration time.Duration
 	sec, err := strconv. Atoi(retryAfter) 
@@ -143,7 +145,12 @@ func onRetryAfter(retryAfter string) {
 		}
 	}
 	if sleepDuration > 0 {
-		log.Printf("Setting retry interval to '%v' according to 'Retry-After' header value", sleepDuration)
-		time.Sleep(sleepDuration)
+		if sleepDuration < MAX_RETRY_DURATION {
+			log.Printf("Setting retry interval to '%v' according to 'Retry-After' header value", sleepDuration)
+			time.Sleep(sleepDuration)
+		} else {
+			log.Printf("Setting retry interval to '%v' according to MAX_RETRY_DURATION value", MAX_RETRY_DURATION)
+			time.Sleep(MAX_RETRY_DURATION)
+		}
 	}
 }
