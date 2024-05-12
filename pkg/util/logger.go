@@ -35,4 +35,5 @@ func InitLog() {
 	}
 	log.SetFlags(log.LstdFlags)
 	log.SetOutput(logWriter)
+	log.Printf("Application logging subsystem is initialized; console logging mode is set to '%s'\n", consoleMode)
 }

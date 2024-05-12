@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"performance-dashboard/pkg/database/dto"
@@ -40,6 +41,9 @@ func InitializeDB() error {
 		db, err = gorm.Open(postgres.New(postgresCfg), gormCfg)
 		if err != nil {
 			return err
+		} else {
+			log.Printf("Database connection established to postgres://%s:%d/%s\n", 
+				dbConfig.Host, dbConfig.Port, dbConfig.DbName)
 		}
 		err = db.AutoMigrate(
 			&dto.ApplicationLog{},
