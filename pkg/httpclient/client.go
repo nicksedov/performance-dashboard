@@ -58,7 +58,8 @@ func buildUrl(baseUrl, apiPath string) string {
 	u, err := url.Parse(apiPath)
     if err != nil {
         log.Printf("Error parsing URL path %s: %s", apiPath, err.Error())
-    }
+		return ""
+	}
 	if u.Scheme != "" && u.Host != "" {
 		return u.String()
 	} else {
@@ -75,6 +76,9 @@ func httpQuery(apiMethod string, apiPath string) *http.Response {
 	// Prepare request
 	settings := profiles.GetSettings()
 	queryPath := buildUrl(settings.JiraConfig.BaseURL, apiPath)
+	if queryPath == "" {
+		return nil
+	}
 	req, err := http.NewRequest(apiMethod, queryPath, nil)
 	if err != nil {
 		log.Printf("Error creating request: %v", err)
