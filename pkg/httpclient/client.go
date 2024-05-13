@@ -57,14 +57,14 @@ func getClient() *http.Client {
 func buildUrl(baseUrl, apiPath string) string {
 	u, err := url.Parse(apiPath)
     if err != nil {
-        log.Fatal(err)
+        log.Printf("Error parsing URL path %s: %s", apiPath, err.Error())
     }
 	if u.Scheme != "" && u.Host != "" {
 		return u.String()
 	} else {
 		base, err := url.Parse(baseUrl)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("Error parsing URL path %s: %s", apiPath, err.Error())
 		}
 		return base.ResolveReference(u).String()
 	}
