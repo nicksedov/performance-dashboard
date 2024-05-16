@@ -1,14 +1,14 @@
 package database
 
 import (
+	"errors"
 	"log"
 	"performance-dashboard/pkg/database/dto"
 	"performance-dashboard/pkg/jira/model"
+
+	"gorm.io/gorm"
 )
 
-type Sequence struct {
-	NextId int
-}
 const extAccountLabel string  = "[external]"
 const extAccountRole  string = "External participant"
 
@@ -54,16 +54,20 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, extAccountRole)
 		}
 	} else {
-		seq := &Sequence{}
-		row := db.Select("COALESCE(MAX(id), -10000) + 1 as next_id").Where("account_type LIKE ?", extAccountLabel + "%").Find(&dto.Account{}).Row()
-		err := row.Scan(seq)
-		if err == nil {
-			log.Printf("Auto-generated new ID=%d for account record '%s' with role '%s'\n", seq.NextId, newAccount.DisplayName, extAccountRole)
-			newAccount.ID = seq.NextId
-			db.Save(&newAccount)
+		lastExtAccount := &dto.Account{}
+		tx := db.Where("account_type LIKE ?", extAccountLabel + "%").Order("id DESC").First(lastExtAccount)
+		if tx.Error == nil {
+			newAccount.ID = lastExtAccount.ID + 1
+		} else if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			newAccount.ID = -10000
 		} else {
-			log.Printf("Error saving account record '%s' with role '%s': %v\n", newAccount.DisplayName, extAccountRole, err)
+			log.Printf("Error saving account record '%s' with role '%s': %v\n", newAccount.DisplayName, extAccountRole, tx.Error)
 		}
+		if newAccount.ID != 0 {
+			log.Printf("Saving account record '%s' with role '%s' and ID=%d\n", newAccount.DisplayName, extAccountRole, newAccount.ID)
+			db.Save(&newAccount)
+		}
+
 	}
 	return &newAccount
 }
