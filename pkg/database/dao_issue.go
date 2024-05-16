@@ -79,7 +79,7 @@ func getAccountMetadata(acc *model.Account) *dto.Account {
 		result, err = getCached(accountNameCache, acc.DisplayName, whereClause)
 	}
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		db.Save(acc)	
+		SaveExternalParticipantAccount(acc)	
 	}
 	return result
 }

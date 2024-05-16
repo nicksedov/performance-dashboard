@@ -28,3 +28,28 @@ func SaveAccount(actor *model.RoleActor, role string) {
 		db.Save(&newAccount)
 	}
 }
+
+func SaveExternalParticipantAccount(actor *model.Account) {
+	
+	const role string = "External participant"
+
+	newAccount := dto.Account{
+		AccountID:    actor.AccountID,
+		AccountType:  actor.AccountType,
+		Role:         role,
+		DisplayName:  actor.DisplayName,
+		EmailAddress: actor.EmailAddress,
+	}
+	existing := dto.Account{}
+	tx := db.Where(dto.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
+	if tx.Error == nil {
+		newAccount.ID = existing.ID
+		if existing != newAccount {
+			db.Save(&newAccount)
+		} else {
+			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, role)
+		}
+	} else {
+		db.Save(&newAccount)
+	}
+}
