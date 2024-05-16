@@ -55,7 +55,7 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 		}
 	} else {
 		seq := &Sequence{}
-		row := db.Select("COALESCE(MAX(id), -10000) + 1 as next_id").Where("account_type LIKE ?", extAccountLabel + "%").Table("accounts").Row()
+		row := db.Select("COALESCE(MAX(id), -10000) + 1 as next_id").Where("account_type LIKE ?", extAccountLabel + "%").Find(&dto.Account{}).Row()
 		err := row.Scan(seq)
 		if err == nil {
 			log.Printf("Auto-generated new ID=%d for account record '%s' with role '%s'\n", seq.NextId, newAccount.DisplayName, extAccountRole)
