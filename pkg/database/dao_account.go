@@ -58,11 +58,11 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 		row := db.Select("COALESCE(MAX(id), -10000) + 1 as next_id").Where("account_type LIKE ?", extAccountLabel + "%").Table("accounts").Row()
 		err := row.Scan(seq)
 		if err == nil {
-			log.Printf("Auto-generated new ID=%d for account record '%s' with role '%s'", seq.NextId, newAccount.DisplayName, extAccountRole)
+			log.Printf("Auto-generated new ID=%d for account record '%s' with role '%s'\n", seq.NextId, newAccount.DisplayName, extAccountRole)
 			newAccount.ID = seq.NextId
 			db.Save(&newAccount)
 		} else {
-			log.Printf("Error saving account record '%s' with role '%s': %v", newAccount.DisplayName, extAccountRole, err)
+			log.Printf("Error saving account record '%s' with role '%s': %v\n", newAccount.DisplayName, extAccountRole, err)
 		}
 	}
 	return &newAccount
