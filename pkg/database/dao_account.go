@@ -6,6 +6,12 @@ import (
 	"performance-dashboard/pkg/jira/model"
 )
 
+type sequence struct {
+	NextId int
+}
+const extAccountLabel string  = "[external]"
+const extAccountRole  string = "External participant"
+
 func SaveAccount(actor *model.RoleActor, role string) {
 	newAccount := dto.Account{
 		ID:           actor.ID,
@@ -29,27 +35,34 @@ func SaveAccount(actor *model.RoleActor, role string) {
 	}
 }
 
-func SaveExternalParticipantAccount(actor *model.Account) {
+func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 	
-	const role string = "External participant"
-
 	newAccount := dto.Account{
 		AccountID:    actor.AccountID,
-		AccountType:  actor.AccountType,
-		Role:         role,
+		AccountType:  extAccountLabel + actor.AccountType,
+		Role:         extAccountRole,
 		DisplayName:  actor.DisplayName,
 		EmailAddress: actor.EmailAddress,
 	}
 	existing := dto.Account{}
-	tx := db.Where(dto.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
+	tx := db.Where(dto.Account{Role: extAccountRole, DisplayName: newAccount.DisplayName}).First(&existing)
 	if tx.Error == nil {
 		newAccount.ID = existing.ID
 		if existing != newAccount {
 			db.Save(&newAccount)
 		} else {
-			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, role)
+			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, extAccountRole)
 		}
 	} else {
-		db.Save(&newAccount)
+		seq := &sequence{}
+		row := db.Select("COALESCE(MAX(id), -10000) + 1").Where("account_type LIKE ?", extAccountLabel + "%").Find(&dto.Account{})
+		tx := row.Scan(seq)
+		if tx.Error == nil {
+			newAccount.ID = seq.NextId
+			db.Save(&newAccount)
+		} else {
+			log.Printf("Error saving account record '%s' with role '%s'", newAccount.DisplayName, extAccountRole)
+		}
 	}
+	return &newAccount
 }
