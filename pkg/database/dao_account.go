@@ -6,7 +6,7 @@ import (
 	"performance-dashboard/pkg/jira/model"
 )
 
-type sequence struct {
+type Sequence struct {
 	NextId int
 }
 const extAccountLabel string  = "[external]"
@@ -54,10 +54,11 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, extAccountRole)
 		}
 	} else {
-		seq := &sequence{}
+		seq := &Sequence{}
 		row := db.Select("COALESCE(MAX(id), -10000) + 1 as next_id").Where("account_type LIKE ?", extAccountLabel + "%").Table("accounts").Row()
 		err := row.Scan(seq)
 		if err == nil {
+			log.Printf("Auto-generated new ID=%d for account record '%s' with role '%s'", seq.NextId, newAccount.DisplayName, extAccountRole)
 			newAccount.ID = seq.NextId
 			db.Save(&newAccount)
 		} else {
