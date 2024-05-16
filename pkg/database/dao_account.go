@@ -62,7 +62,7 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 			newAccount.ID = seq.NextId
 			db.Save(&newAccount)
 		} else {
-			log.Printf("Error saving account record '%s' with role '%s'", newAccount.DisplayName, extAccountRole)
+			log.Printf("Error saving account record '%s' with role '%s': %v", newAccount.DisplayName, extAccountRole, err)
 		}
 	}
 	return &newAccount
