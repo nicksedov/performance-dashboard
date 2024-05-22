@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"performance-dashboard/pkg/database/dto"
 	"performance-dashboard/pkg/jira/model"
@@ -18,6 +19,7 @@ const ISO8601_LAYOUT string = "2006-01-02T15:04:05Z0700"
 
 var accountIdCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 var accountNameCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
+var issueStateCache *cache.Cache = cache.New(30*time.Second, 1*time.Minute)
 
 func SaveIssue(pollId int, iss *model.Issue, f *model.IssueFields, parentId int) *dto.IssueState {
 
@@ -61,8 +63,15 @@ func SaveIssue(pollId int, iss *model.Issue, f *model.IssueFields, parentId int)
 	} else {
 		db.Save(&newIssue)
 	}
-
-	issueStateRecord := saveIssueState(pollId, newIssue.ID, assignee.ID, f)
+	var issueStateRecord *dto.IssueState
+	stateRecordCacheKey := fmt.Sprintf("%d;%d", pollId, newIssue.ID)
+	cachedValue, isCached := issueStateCache.Get(stateRecordCacheKey)
+	if !isCached {
+		issueStateRecord = saveIssueState(pollId, newIssue.ID, assignee.ID, f)
+		issueStateCache.Add(stateRecordCacheKey, issueStateRecord, cache.DefaultExpiration)
+	} else {
+		issueStateRecord = cachedValue.(*dto.IssueState)
+	}
 	saveIssueSprints(newIssue.ID, f)
 	saveOrUpdateAssigneeTransitions(newIssue.ID, assignee.ID)
 	return issueStateRecord
