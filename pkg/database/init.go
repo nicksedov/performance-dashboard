@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -21,30 +22,28 @@ func InitializeDB() error {
 	if db == nil {
 		dbConfigs := profiles.GetSettings().DbConfig
 		dbConfig := dbConfigs.DbNode[0]
-		dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
-		dsn := fmt.Sprintf(dsnFormat,
-			dbConfig.Host, dbConfig.Port, dbConfig.DbName, dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
-		gormCfg := &gorm.Config{
-			PrepareStmt: false,
-			Logger:      logger.Default,
+		postgresCfg, err := buildPostgresConfig(dbConfig)
+		if err != nil {
+			return err
 		}
-		if dbConfig.SearchPath != "" {
-			searchPathNamingStrategy := schema.NamingStrategy{
-				TablePrefix: dbConfig.SearchPath + ".",
-			}
-			gormCfg.NamingStrategy = searchPathNamingStrategy
-		}
-		postgresCfg := postgres.Config{
-			DSN:                  dsn,
-			PreferSimpleProtocol: true, // disables implicit prepared statement usage
-		}
-		db, err = gorm.Open(postgres.New(postgresCfg), gormCfg)
+		db, err = gorm.Open(postgres.New(*postgresCfg), buildGormConfig(dbConfig))
 		if err != nil {
 			return err
 		} else {
 			log.Printf("Database connection established to postgres://%s:%d/%s\n", 
 				dbConfig.Host, dbConfig.Port, dbConfig.DbName)
 		}
+		sqlDb, err := db.DB()
+		if err != nil {
+			return err
+		}
+		sqlDb.SetMaxIdleConns(2)
+		sqlDb.SetMaxOpenConns(2)
+		dbStats, err := json.MarshalIndent(sqlDb.Stats(), "", "  ")
+		if err != nil {
+			return err
+		}
+		log.Printf("Database connection information: %s", string(dbStats))
 		err = db.AutoMigrate(
 			&dto.ApplicationLog{},
 			&dto.IssueMetadata{},
@@ -59,10 +58,35 @@ func InitializeDB() error {
 		)
 		if err == nil {
 			tx := db.Save(&dto.ApplicationLog{Timestamp: time.Now(), Log: "Database connection created"})
-			err = tx.Error
+			return tx.Error
 		}
 	}
 	return err
+}
+
+func buildPostgresConfig(dbConfig profiles.Database) (*postgres.Config, error) {
+	dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
+	dsn := fmt.Sprintf(dsnFormat,
+		dbConfig.Host, dbConfig.Port, dbConfig.DbName, 
+		dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
+	postgresCfg := &postgres.Config{
+		DSN:                  dsn,
+		PreferSimpleProtocol: true, // disables implicit prepared statement usage
+	}
+	return postgresCfg, nil
+}
+
+func buildGormConfig(dbConfig profiles.Database) *gorm.Config {
+	gormCfg := &gorm.Config{
+		Logger:      logger.Default,
+	}
+	if dbConfig.SearchPath != "" {
+		searchPathNamingStrategy := schema.NamingStrategy{
+			TablePrefix: dbConfig.SearchPath + ".",
+		}
+		gormCfg.NamingStrategy = searchPathNamingStrategy
+	}
+	return gormCfg
 }
 
 func Read[T any](selector func(items *[]T, db *gorm.DB)) (*[]T, error) {

@@ -32,12 +32,14 @@ require (
 )
 
 require (
+	github.com/jinzhu/copier v0.4.0
 	github.com/magiconair/properties v1.8.7
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/sfomuseum/go-edtf v1.1.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
+	golang.yandex/hasql v1.1.1
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/postgres v1.5.7
 )
