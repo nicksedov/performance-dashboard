@@ -51,9 +51,12 @@ func InitializeDB() error {
 				return err
 			} else {
 				db = append(db, dbNode)
-				if !recovery {
+				if recovery {
+					log.Printf("Database is in standby/recovery mode")
+				} else {
 					activeNode = len(db) - 1
-				}
+					log.Printf("Database is active")
+				} 
 			}
 		}
 	}
