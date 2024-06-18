@@ -9,8 +9,8 @@ import (
 	"gorm.io/gorm"
 )
 
-const extAccountLabel string  = "[external]"
-const extAccountRole  string = "External participant"
+const extAccountLabel string = "[external]"
+const extAccountRole string = "External participant"
 
 func SaveAccount(actor *model.RoleActor, role string) {
 	newAccount := dto.Account{
@@ -22,21 +22,21 @@ func SaveAccount(actor *model.RoleActor, role string) {
 		EmailAddress: actor.EmailAddress,
 	}
 	existing := dto.Account{}
-	tx := db.Where(dto.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
+	tx := GetDB().Where(dto.Account{Role: role, DisplayName: newAccount.DisplayName}).First(&existing)
 	if tx.Error == nil {
 		newAccount.ID = existing.ID
 		if existing != newAccount {
-			db.Save(&newAccount)
+			GetDB().Save(&newAccount)
 		} else {
 			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, role)
 		}
 	} else {
-		db.Save(&newAccount)
+		GetDB().Save(&newAccount)
 	}
 }
 
 func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
-	
+
 	newAccount := dto.Account{
 		AccountID:    actor.AccountID,
 		AccountType:  extAccountLabel + actor.AccountType,
@@ -45,17 +45,17 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 		EmailAddress: actor.EmailAddress,
 	}
 	existing := dto.Account{}
-	tx := db.Where(dto.Account{Role: extAccountRole, DisplayName: newAccount.DisplayName}).First(&existing)
+	tx := GetDB().Where(dto.Account{Role: extAccountRole, DisplayName: newAccount.DisplayName}).First(&existing)
 	if tx.Error == nil {
 		newAccount.ID = existing.ID
 		if existing != newAccount {
-			db.Save(&newAccount)
+			GetDB().Save(&newAccount)
 		} else {
 			log.Printf("Account '%s' with role '%s' is already known\n", newAccount.DisplayName, extAccountRole)
 		}
 	} else {
 		lastExtAccount := &dto.Account{}
-		tx := db.Where("account_type LIKE ?", extAccountLabel + "%").Order("id DESC").First(lastExtAccount)
+		tx := GetDB().Where("account_type LIKE ?", extAccountLabel+"%").Order("id DESC").First(lastExtAccount)
 		if tx.Error == nil {
 			newAccount.ID = lastExtAccount.ID + 1
 		} else if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -65,7 +65,7 @@ func SaveExternalParticipantAccount(actor *model.Account) *dto.Account {
 		}
 		if newAccount.ID != 0 {
 			log.Printf("Saving account record '%s' with role '%s' and ID=%d\n", newAccount.DisplayName, extAccountRole, newAccount.ID)
-			db.Save(&newAccount)
+			GetDB().Save(&newAccount)
 		}
 
 	}

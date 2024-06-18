@@ -22,15 +22,15 @@ func SaveIssueMetadata(f *model.IssueFieldMeta, issueTypeName string, untranslat
 		UntranslatedName: untranslatedName,
 	}
 	existing := dto.IssueMetadata{}
-	tx := db.Where(dto.IssueMetadata{Name: f.Name, IssueTypeName: issueTypeName}).First(&existing)
+	tx := GetDB().Where(dto.IssueMetadata{Name: f.Name, IssueTypeName: issueTypeName}).First(&existing)
 	if tx.Error == nil {
 		newIssueMetadata.ID = existing.ID
 		if existing != newIssueMetadata {
-			db.Save(&newIssueMetadata)
+			GetDB().Save(&newIssueMetadata)
 		} else {
 			log.Printf("Issue field '%s' of type '%s' is already known\n", f.Name, issueTypeName)
 		}
 	} else {
-		db.Save(&newIssueMetadata)
+		GetDB().Save(&newIssueMetadata)
 	}
 }

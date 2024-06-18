@@ -8,20 +8,20 @@ import (
 
 func SaveSprintPoll(sprintID int, pollId int, isCompletionPoll bool) {
 	sprintPoll := dto.SprintPoll{}
-	err := db.Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll).Error
+	err := GetDB().Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll).Error
 	if err == gorm.ErrRecordNotFound {
 		sprintPoll.FirstPollID = pollId
 	}
 	sprintPoll.ID = sprintID
 	sprintPoll.LastPollID = pollId
 	sprintPoll.CompletionPoll = isCompletionPoll
-	db.Save(&sprintPoll)
+	GetDB().Save(&sprintPoll)
 }
 
-// Check that a final poll was made for a given sprint after its completion  
+// Check that a final poll was made for a given sprint after its completion
 func CompletionPollRequired(sprintID int) bool {
 	sprintPoll := dto.SprintPoll{}
-	tx := db.Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll)
+	tx := GetDB().Where(dto.SprintPoll{ID: sprintID}).First(&sprintPoll)
 	if tx.Error == nil {
 		return !sprintPoll.CompletionPoll
 	} else {

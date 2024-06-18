@@ -9,65 +9,91 @@ import (
 	"performance-dashboard/pkg/database/dto"
 	"performance-dashboard/pkg/profiles"
 
+	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
-var db *gorm.DB
+var db []*gorm.DB
+var activeNode int = -1
 
 func InitializeDB() error {
-	var err error
-	if db == nil {
+	if len(db) == 0 {
 		dbConfigs := profiles.GetSettings().DbConfig
-		dbConfig := dbConfigs.DbNode[0]
-		postgresCfg, err := buildPostgresConfig(dbConfig)
-		if err != nil {
-			return err
-		}
-		db, err = gorm.Open(postgres.New(*postgresCfg), buildGormConfig(dbConfig))
-		if err != nil {
-			return err
-		} else {
-			log.Printf("Database connection established to postgres://%s:%d/%s\n", 
-				dbConfig.Host, dbConfig.Port, dbConfig.DbName)
-		}
-		sqlDb, err := db.DB()
-		if err != nil {
-			return err
-		}
-		sqlDb.SetMaxIdleConns(2)
-		sqlDb.SetMaxOpenConns(2)
-		dbStats, err := json.MarshalIndent(sqlDb.Stats(), "", "  ")
-		if err != nil {
-			return err
-		}
-		log.Printf("Database connection information: %s", string(dbStats))
-		err = db.AutoMigrate(
-			&dto.ApplicationLog{},
-			&dto.IssueMetadata{},
-			&dto.Sprint{},
-			&dto.SprintPoll{},
-			&dto.Account{},
-			&dto.Poll{},
-			&dto.Issue{},
-			&dto.IssueState{},
-			&dto.IssueSprint{},
-			&dto.IssueAssigneeTransitions{},
-		)
-		if err == nil {
-			tx := db.Save(&dto.ApplicationLog{Timestamp: time.Now(), Log: "Database connection created"})
-			return tx.Error
+		for _, dbConfig := range dbConfigs.DbNode {
+			postgresCfg, err := buildPostgresConfig(dbConfig)
+			if err != nil {
+				return err
+			}
+			dbNode, err := gorm.Open(postgres.New(*postgresCfg), buildGormConfig(dbConfig))
+			if err != nil {
+				return err
+			} else {
+				log.Printf("Database connection established to postgres://%s:%d/%s\n",
+					dbConfig.Host, dbConfig.Port, dbConfig.DbName)
+			}
+			sqlDb, err := dbNode.DB()
+			if err != nil {
+				return err
+			}
+			sqlDb.SetMaxIdleConns(2)
+			sqlDb.SetMaxOpenConns(2)
+			dbStats, err := json.MarshalIndent(sqlDb.Stats(), "", "  ")
+			if err != nil {
+				return err
+			}
+			log.Printf("Database connection information: %s", string(dbStats))
+			row := sqlDb.QueryRow("SELECT pg_is_in_recovery()")
+			var recovery bool
+			if err := row.Scan(&recovery); err != nil {
+				return err
+			} else {
+				db = append(db, dbNode)
+				if !recovery {
+					activeNode = len(db) - 1
+				}
+			}
 		}
 	}
+	if GetDB() == nil {
+		return errors.New("Database not available")
+	}
+	return autoMigrate()
+}
+
+func autoMigrate() error {
+	err := GetDB().AutoMigrate(
+		&dto.ApplicationLog{},
+		&dto.IssueMetadata{},
+		&dto.Sprint{},
+		&dto.SprintPoll{},
+		&dto.Account{},
+		&dto.Poll{},
+		&dto.Issue{},
+		&dto.IssueState{},
+		&dto.IssueSprint{},
+		&dto.IssueAssigneeTransitions{},
+	)
+	if err == nil {
+		tx := GetDB().Save(&dto.ApplicationLog{Timestamp: time.Now(), Log: "Database connection created"})
+		return tx.Error
+	}
 	return err
+}
+
+func GetDB() *gorm.DB {
+	if activeNode > -1 && activeNode < len(db) {
+		return db[activeNode]
+	}
+	return nil
 }
 
 func buildPostgresConfig(dbConfig profiles.Database) (*postgres.Config, error) {
 	dsnFormat := "host=%s port=%d dbname=%s user=%s password=%s sslmode=%s"
 	dsn := fmt.Sprintf(dsnFormat,
-		dbConfig.Host, dbConfig.Port, dbConfig.DbName, 
+		dbConfig.Host, dbConfig.Port, dbConfig.DbName,
 		dbConfig.User, dbConfig.Password, dbConfig.SSLMode)
 	postgresCfg := &postgres.Config{
 		DSN:                  dsn,
@@ -78,7 +104,7 @@ func buildPostgresConfig(dbConfig profiles.Database) (*postgres.Config, error) {
 
 func buildGormConfig(dbConfig profiles.Database) *gorm.Config {
 	gormCfg := &gorm.Config{
-		Logger:      logger.Default,
+		Logger: logger.Default,
 	}
 	if dbConfig.SearchPath != "" {
 		searchPathNamingStrategy := schema.NamingStrategy{
@@ -91,7 +117,7 @@ func buildGormConfig(dbConfig profiles.Database) *gorm.Config {
 
 func Read[T any](selector func(items *[]T, db *gorm.DB)) (*[]T, error) {
 	items := new([]T)
-	selector(items, db)
+	selector(items, GetDB())
 	return items, nil
 }
 

@@ -18,15 +18,15 @@ func SaveSprint(s *model.Sprint) {
 		State:       s.State,
 	}
 	existing := dto.Sprint{}
-	tx := db.Where(dto.Sprint{ID: s.ID}).First(&existing)
+	tx := GetDB().Where(dto.Sprint{ID: s.ID}).First(&existing)
 	if tx.Error == nil {
 		if !existing.Equals(&sprint) {
-			db.Save(&sprint)
+			GetDB().Save(&sprint)
 		} else {
 			log.Printf("Sprint with ID '%d' is already known\n", sprint.ID)
 		}
 	} else {
 		log.Printf("A new sprint with ID '%d' and name '%s' will be created\n", s.ID, sprint.Name)
-		db.Save(&sprint)
+		GetDB().Save(&sprint)
 	}
 }

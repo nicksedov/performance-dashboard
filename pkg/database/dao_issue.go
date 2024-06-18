@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type WhereClause [T any]func() T
+type WhereClause[T any] func() T
 
 const ISO8601_LAYOUT string = "2006-01-02T15:04:05Z0700"
 
@@ -49,19 +49,19 @@ func SaveIssue(pollId int, iss *model.Issue, f *model.IssueFields, parentId int)
 	}
 
 	existing := dto.Issue{}
-	tx := db.Where(dto.Issue{Key: iss.Key}).First(&existing)
+	tx := GetDB().Where(dto.Issue{Key: iss.Key}).First(&existing)
 	if tx.Error == nil {
 		newIssue.ID = existing.ID
 		if newIssue.LastSprintID == 0 && existing.LastSprintID != 0 {
 			newIssue.LastSprintID = existing.LastSprintID
 		}
 		if !existing.Equals(&newIssue) {
-			db.Save(&newIssue)
+			GetDB().Save(&newIssue)
 		} else {
 			log.Printf("Issue with key '%s' is already known\n", iss.Key)
 		}
 	} else {
-		db.Save(&newIssue)
+		GetDB().Save(&newIssue)
 	}
 	var issueStateRecord *dto.IssueState
 	stateRecordCacheKey := fmt.Sprintf("%d;%d", pollId, newIssue.ID)
@@ -88,7 +88,7 @@ func getAccountMetadata(acc *model.Account) *dto.Account {
 		result, err = getCached(accountNameCache, acc.DisplayName, whereClause)
 	}
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		result = SaveExternalParticipantAccount(acc)	
+		result = SaveExternalParticipantAccount(acc)
 	}
 	return result
 }
@@ -99,12 +99,12 @@ func getCached[T any](memCache *cache.Cache, key string, whereClause WhereClause
 	if found {
 		result = resultObj.(T)
 	} else {
-		r := db.Where(whereClause()).First(&result)
+		r := GetDB().Where(whereClause()).First(&result)
 		if r.Error == nil {
 			accountNameCache.Add(key, result, cache.DefaultExpiration)
 		} else {
 			return nil, r.Error
-		} 
+		}
 	}
 	return &result, nil
 }
@@ -118,7 +118,7 @@ func saveIssueState(pollId int, issueId int, assigneeId int, f *model.IssueField
 		StatusCategory: f.Status.StatusCategory.Key,
 		StatusID:       f.Status.ID,
 	}
-	db.Save(&issueStateRecord)
+	GetDB().Save(&issueStateRecord)
 	return &issueStateRecord
 }
 
@@ -135,13 +135,13 @@ func saveIssueSprints(issueId int, f *model.IssueFields) {
 	for _, sprint := range f.ClosedSprints {
 		spID := sprint.ID
 		if spID != 0 && !slices.Contains(existingSprintIds, spID) {
-			db.Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
+			GetDB().Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
 		}
 	}
 	// Current sprint
 	spID := f.Sprint.ID
 	if spID != 0 && !slices.Contains(existingSprintIds, spID) {
-		db.Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
+		GetDB().Save(&dto.IssueSprint{IssueID: issueId, SprintID: spID})
 	}
 }
 
@@ -161,10 +161,10 @@ func saveOrUpdateAssigneeTransitions(issueId int, assigneeId int) {
 		if update.LastAssigneeID != assigneeId {
 			update.Transitions = update.Transitions + 1
 			update.LastAssigneeID = assigneeId
-			db.Save(&update)
+			GetDB().Save(&update)
 		}
 	} else {
 		newTransition := dto.IssueAssigneeTransitions{IssueID: issueId, LastAssigneeID: assigneeId}
-		db.Save(&newTransition)
+		GetDB().Save(&newTransition)
 	}
 }
