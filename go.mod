@@ -32,6 +32,7 @@ require (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/jinzhu/copier v0.4.0
 	github.com/magiconair/properties v1.8.7
 	github.com/patrickmn/go-cache v2.1.0+incompatible

@@ -29,6 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing database connection:\n  %s", err.Error())
 	}
+	defer database.CloseDB() 
 	// Initialize background periodic tasks
 	scheduler.Schedule()
 	// Configure endpoints

@@ -13,7 +13,7 @@ import (
 var (
 	client *http.Client
 	lastRequestTimestamp time.Time
-	requestRateLimit int = 8
+	requestRateLimit float32 = 8.0
 	retryLimit int = 3
 	interval time.Duration
 )

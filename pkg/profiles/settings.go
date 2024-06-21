@@ -25,12 +25,13 @@ type Settings struct {
 
 	HttpClientConfig struct {
 		RequestTimeout   time.Duration `yaml:"requestTimeout"`
-		RequestRateLimit int           `yaml:"requestRateLimit"`
+		RequestRateLimit float32       `yaml:"requestRateLimit"`
 		RetryLimit       int           `yaml:"retryLimit"`
 	} `yaml:"httpClient"`
 
 	DbConfig struct {
 		DbNode  []Database `yaml:"node"`
+		MasterDetectionPeriod time.Duration `yaml:"masterDetectionPeriod"`
 	} `yaml:"database"`
 
 	Logger struct {
